@@ -11,6 +11,7 @@
 - 行高按条数自适应，3 条和 4 条都撑满版面
 """
 
+import math
 import pathlib
 import subprocess
 import sys
@@ -39,7 +40,7 @@ LINE = (240, 226, 214)
 ROW_X, ROW_W = 54, 972
 LIST_TOP, LIST_AREA = 620, 1010
 DIM_ALPHA = 0.46
-GAP, SLIDE = 0.35, 0.22
+GAP, SLIDE = 0.18, 0.12
 
 BOARDS = [
     {"title": "跌得最狠", "note": "本周 · 农业农村部", "color": GREEN, "caption": "叶菜整体在跌",
@@ -117,7 +118,7 @@ def shadow_for(h):
     return _SHADOWS[h]
 
 
-def row_layer(icon, name, cat, value, color, height):
+def row_layer(icon, name, cat, value, color, height, pop=1.0):
     s = max(1.0, min(1.32, height / 210))          # 行高越大，字越大
     im = Image.new("RGBA", (ROW_W, height), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
@@ -126,17 +127,17 @@ def row_layer(icon, name, cat, value, color, height):
            anchor="lm", embedded_color=True)
     d.text((158, cy - 40 * s), name, font=ImageFont.truetype(FB, int(46 * s)), fill=INK)
     d.text((158, cy + 12 * s), cat, font=ImageFont.truetype(FR, int(24 * s)), fill=MUTED)
-    d.text((ROW_W - 44, cy), value, font=ImageFont.truetype(FB, int(60 * s)), fill=color, anchor="rm")
+    d.text((ROW_W - 44, cy), value, font=ImageFont.truetype(FB, int(60 * s * pop)), fill=color, anchor="rm")
     return im
 
 
-def draw_board(img, board, active, slide_from, slide_p, appear):
+def draw_board(img, board, active, slide_from, slide_p, elapsed):
     n = len(board["items"])
     rh = min(340 if n <= 2 else 270, max(196, LIST_AREA // n))
     top = LIST_TOP + (LIST_AREA - n * rh) // 2
 
     d = ImageDraw.Draw(img)
-    a = int(255 * appear)
+    a = int(255 * max(0.0, min(1.0, elapsed / 0.26)))
     d.text((54, 400), board["title"], font=ImageFont.truetype(FB, 76), fill=board["color"] + (a,))
     d.text((56, 500), board["note"], font=ImageFont.truetype(FR, 27), fill=MUTED + (a,))
     if board["caption"]:
@@ -152,21 +153,67 @@ def draw_board(img, board, active, slide_from, slide_p, appear):
         fill=(255, 255, 255, a))
 
     for i, (icon, name, cat, value) in enumerate(board["items"]):
-        layer = row_layer(icon, name, cat, value, board["color"], rh)
-        if i != active:
-            layer.putalpha(layer.getchannel("A").point(lambda x: int(x * DIM_ALPHA)))
-        if a < 255:
-            layer.putalpha(layer.getchannel("A").point(lambda x: int(x * a / 255)))
-        img.alpha_composite(layer, (ROW_X, top + i * rh))
+        # 逐行错开入场：每行晚 60ms，从左侧滑入
+        ra = max(0.0, min(1.0, (elapsed - 0.06 * i) / 0.24))
+        if ra <= 0.01:
+            continue
+        pop = 1.0
+        if i == active and slide_p < 1:
+            pop = 1.0 + 0.12 * math.sin(math.pi * min(1.0, slide_p))
+        layer = row_layer(icon, name, cat, value, board["color"], rh, pop)
+        alpha = ra * (1.0 if i == active else DIM_ALPHA)
+        layer.putalpha(layer.getchannel("A").point(lambda x: int(x * alpha)))
+        dx = int((1 - ease(ra)) * 46)
+        img.alpha_composite(layer, (ROW_X + dx, top + i * rh))
 
 
-def intro_screen(img):
+def _num_layer(text, color, size):
+    f = ImageFont.truetype(FB, size)
+    probe = ImageDraw.Draw(Image.new("RGB", (10, 10)))
+    w = int(probe.textlength(text, font=f)) + 20
+    im = Image.new("RGBA", (w, int(size * 1.5)), (0, 0, 0, 0))
+    ImageDraw.Draw(im).text((0, 0), text, font=f, fill=color)
+    return im
+
+
+def _stamp(img, layer, xy, scale, alpha):
+    if alpha <= 0.01:
+        return
+    w = max(1, int(layer.width * scale))
+    h = max(1, int(layer.height * scale))
+    im = layer.resize((w, h), Image.LANCZOS)
+    if alpha < 1:
+        im.putalpha(im.getchannel("A").point(lambda v: int(v * alpha)))
+    img.alpha_composite(im, (int(xy[0]), int(xy[1])))
+
+
+_INTRO_CACHE = {}
+
+
+def intro_screen(img, t):
+    """开场：两个极端数字依次砸进来，先把人钉住。"""
+    if not _INTRO_CACHE:
+        _INTRO_CACHE["up"] = _num_layer("+46.7%", RED, 190)
+        _INTRO_CACHE["down"] = _num_layer("−10.5%", GREEN, 190)
+
     d = ImageDraw.Draw(img)
-    d.text((54, 690), "这周物价", font=ImageFont.truetype(FB, 96), fill=INK)
-    d.text((54, 826), "有几样东西", font=ImageFont.truetype(FB, 72), fill=INK)
-    d.text((54, 936), "一周涨了快五成", font=ImageFont.truetype(FB, 72), fill=RED)
-    d.line([(54, 1078), (W - 54, 1078)], fill=LINE, width=3)
-    d.text((54, 1118), "2026 年 10 月 · 第 42 周", font=ImageFont.truetype(FR, 30), fill=MUTED)
+    d.text((54, 360), "涨疯了", font=ImageFont.truetype(FB, 42), fill=RED)
+
+    p1 = min(1.0, t / 0.42)
+    _stamp(img, _INTRO_CACHE["up"], (54, 400),
+           1.30 - 0.30 * ease(p1), p1)
+
+    p2 = min(1.0, max(0.0, (t - 0.55) / 0.42))
+    if p2 > 0:
+        d.text((54, 736), "跌得狠", font=ImageFont.truetype(FB, 42), fill=GREEN)
+        _stamp(img, _INTRO_CACHE["down"], (54, 776),
+               1.30 - 0.30 * ease(p2), p2)
+
+    if t > 1.4:
+        a = int(255 * min(1.0, (t - 1.4) / 0.3))
+        d.line([(54, 1090), (W - 54, 1090)], fill=LINE + (a,), width=3)
+        d.text((54, 1126), "2026 年 10 月 · 第 42 周", font=ImageFont.truetype(FR, 30),
+               fill=MUTED + (a,))
 
 
 def end_screen(img):
@@ -213,7 +260,7 @@ def build_audio(wavs, starts, total, out_path):
 def main():
     day = sys.argv[1] if len(sys.argv) > 1 else "2026-10-18"
     vdir = ROOT / "output" / day / "视频"
-    wavs = sorted((vdir / "_tts2").glob("c*.wav"))
+    wavs = sorted((vdir / "_tts3").glob("r4_c*.wav"))
     if len(wavs) != len(SCRIPT):
         print("[x] 配音 %d 条 / 脚本 %d 条，对不上" % (len(wavs), len(SCRIPT)))
         return 1
@@ -274,14 +321,13 @@ def main():
         img.alpha_composite(brand)
 
         if state == "intro":
-            intro_screen(img)
+            intro_screen(img, now)
         elif state == "end":
             end_screen(img)
         else:
             sp = min(1.0, (now - t0) / SLIDE) if prev != active else 1.0
-            appear = min(1.0, (now - t0) / 0.28)
             draw_board(img, BOARDS[state], active,
-                       prev if prev != active else None, sp, appear)
+                       prev if prev != active else None, sp, now - t0)
 
         d = ImageDraw.Draw(img)
         y = H - 30
