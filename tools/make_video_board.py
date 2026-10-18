@@ -53,7 +53,6 @@ BOARDS = [
      "items": [
          ("💻", "数据存储设备", "数码", "+46.7%"),
          ("📱", "平板电脑", "数码", "+23.6%"),
-         ("🍼", "婴幼儿奶粉", "母婴教育", "+30%"),
          ("💾", "DDR5 内存条", "数码", "+380%"),
      ]},
     {"title": "先别碰", "note": "位置高，还在涨", "color": TAUPE, "caption": "",
@@ -64,12 +63,25 @@ BOARDS = [
 ]
 
 SCRIPT = [
-    ("intro", None), ("board", 0),
+    ("intro", None),
     ("item", (0, 0)), ("item", (0, 1)), ("item", (0, 2)),
-    ("board", 1),
-    ("item", (1, 0)), ("item", (1, 1)), ("item", (1, 2)), ("item", (1, 3)),
-    ("board", 2),
-    ("end", None), ("end", None),
+    ("item", (1, 0)), ("item", (1, 1)), ("item", (1, 2)),
+    ("item", (2, 0)), ("item", (2, 1)),
+    ("end", None),
+]
+
+# 烧进画面的字幕，比口播短，只留关键信息
+CAPTIONS = [
+    "涨疯了，也跌得狠",
+    "菠菜 −10.5%",
+    "生菜 −9.7%",
+    "平菇 −7.9%",
+    "存储设备 +46.7%",
+    "平板电脑 +23.6%",
+    "内存 +380%",
+    "显卡 +60%，先别碰",
+    "羽绒服 +12%，也一样",
+    "该买的趁现在，该等的别急",
 ]
 
 _SHADOWS = {}
@@ -188,6 +200,18 @@ def _stamp(img, layer, xy, scale, alpha):
 
 
 _INTRO_CACHE = {}
+
+
+def draw_subtitle(img, text):
+    f = ImageFont.truetype(FB, 44)
+    probe = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
+    tw = probe.textlength(text, font=f)
+    pw, ph = int(tw) + 76, 94
+    layer = Image.new("RGBA", (pw, ph), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    d.rounded_rectangle([(0, 0), (pw - 1, ph - 1)], radius=47, fill=(255, 255, 255, 224))
+    d.text((pw / 2, ph / 2), text, font=f, fill=INK + (255,), anchor="mm")
+    img.alpha_composite(layer, ((W - pw) // 2, 1596))
 
 
 def intro_screen(img, t):
@@ -310,10 +334,10 @@ def main():
     n = int(total * FPS)
     for f in range(n):
         now = f / FPS
-        ev = events[0]
-        for e in events:
+        ei, ev = 0, events[0]
+        for k, e in enumerate(events):
             if e[0] <= now:
-                ev = e
+                ei, ev = k, e
             else:
                 break
         t0, state, active, prev = ev
@@ -329,6 +353,9 @@ def main():
             sp = min(1.0, (now - t0) / SLIDE) if prev != active else 1.0
             draw_board(img, BOARDS[state], active,
                        prev if prev != active else None, sp, now - t0)
+
+        if ei < len(CAPTIONS):
+            draw_subtitle(img, CAPTIONS[ei])
 
         d = ImageDraw.Draw(img)
         y = H - 30

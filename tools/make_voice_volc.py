@@ -36,20 +36,19 @@ SPEECH_RATE = 20          # [-50,100]，100 = 2 倍速
 # 部分复刻音色对 speech_rate 不敏感（实测 20/40/70 时长几乎一样），
 # 用 ffmpeg 的 atempo 兜底变速，保持音高不变。
 TEMPO = float(os.environ.get("VOLC_TEMPO", "1.0"))
+# 若设了目标总长（秒），生成后统一按比值变速，让不同音色的成片长度一致
+TARGET = float(os.environ.get("VOLC_TARGET", "22"))
 
 LINES = [
     "这周物价，涨的涨疯了，跌的跌得狠。",
-    "先看跌的。",
     "菠菜，跌了一成。",
     "生菜，百分之九点七。",
     "平菇，百分之七点九。",
-    "再看涨的。",
     "存储设备，一周涨了四成七。",
     "平板，二十三点六。",
-    "奶粉，三十。",
     "内存，一年涨了近四倍。",
-    "这两样先别碰。",
-    "该买的趁现在，该等的别急。",
+    "显卡，先别碰。",
+    "羽绒服，也一样。",
     "关注我，每周日更新。",
 ]
 
@@ -104,10 +103,8 @@ def to_wav(mp3, wav_path):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("用法：python tools/make_voice_volc.py <音色ID> [日期]")
-        return 1
-    speaker = sys.argv[1]
+    DEFAULT_VOICE = "S_Dvf6T9yi2"       # 自己的复刻音色
+    speaker = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_VOICE
     day = sys.argv[2] if len(sys.argv) > 2 else "2026-10-18"
     key = os.environ.get("VOLC_KEY")
     if not key:
@@ -116,6 +113,8 @@ def main():
 
     outdir = ROOT / "output" / day / "视频" / "_tts5"
     outdir.mkdir(parents=True, exist_ok=True)
+    for old in list(outdir.glob("c*.wav")) + list(outdir.glob("c*.mp3")):
+        old.unlink()          # 清掉上一轮的残留，条数变了才不会错位
 
     total = 0.0
     for i, line in enumerate(LINES, 1):
@@ -129,6 +128,21 @@ def main():
         total += d
         print("  c%02d %5.2fs  %s" % (i, d, line[:18]))
 
+    if TARGET > 0 and total > 0:
+        ratio = total / TARGET
+        if ratio > 1.02:
+            for i in range(1, len(LINES) + 1):
+                wav = outdir / ("c%02d.wav" % i)
+                tmp = outdir / ("c%02d_t.wav" % i)
+                subprocess.run([imageio_ffmpeg.get_ffmpeg_exe(), "-y", "-loglevel", "error",
+                                "-i", str(wav), "-filter:a", "atempo=%.3f" % ratio,
+                                "-ar", "22050", "-ac", "1", "-sample_fmt", "s16", str(tmp)],
+                               check=True)
+                tmp.replace(wav)
+            total = sum(wave.open(str(outdir / ("c%02d.wav" % i))).getnframes() /
+                        wave.open(str(outdir / ("c%02d.wav" % i))).getframerate()
+                        for i in range(1, len(LINES) + 1))
+            print("  按目标 %.1fs 变速 %.2fx → 实际 %.2fs" % (TARGET, ratio, total))
     print("合计 %.2fs（%s，atempo %.2f）" % (total, speaker, TEMPO))
     return 0
 
