@@ -24,6 +24,10 @@
 ├─ robots.txt
 ├─ data/prices.json            ← 当期数据，更新只改这里
 ├─ data/history.json           ← 历史价格序列，只增不减（曲线靠它）
+├─ brand/                     ← 品牌素材原件（设计稿）
+├─ assets/logo-icon-*.png     ← 品牌图标（透明圆角，多尺寸）
+├─ assets/logo-round-*.png    ← 圆形头像
+├─ assets/logo-square-*.png   ← 方形满版
 ├─ data/watchlist.json        ← 监控池：只记变化，不写解读、不渲染卡片
 ├─ data/cpi.json              ← 统计局 CPI 分项，用来反查覆盖缺口
 ├─ data/food_series.json       ← 抓来的食品月度序列（scrape_food.py 生成）

@@ -65,8 +65,9 @@ def main():
     gradient(d)
 
     # 顶部标识
-    d.rounded_rectangle([(76, 56), (116, 96)], radius=13, fill=ORANGE)
-    d.text((96, 76), "价", font=font(FONT_BOLD, 21), fill="#ffffff", anchor="mm")
+    icon = Image.open(ROOT / "assets" / "logo-icon-256.png").convert("RGBA")
+    icon = icon.resize((46, 46), Image.LANCZOS)
+    img.paste(icon, (74, 53), icon)
 
     wm = font(FONT_BOLD, 27)
     d.text((130, 58), "今天贵不贵", font=wm, fill=INK)
