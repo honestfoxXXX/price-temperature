@@ -8,3 +8,7 @@ tools/_*
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# 每周发布产物
+output/
+
