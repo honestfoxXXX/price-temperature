@@ -260,7 +260,7 @@ def build_audio(wavs, starts, total, out_path):
 def main():
     day = sys.argv[1] if len(sys.argv) > 1 else "2026-10-18"
     vdir = ROOT / "output" / day / "视频"
-    wavs = sorted((vdir / "_tts3").glob("r4_c*.wav"))
+    wavs = sorted((vdir / "_tts4").glob("c*.wav"))
     if len(wavs) != len(SCRIPT):
         print("[x] 配音 %d 条 / 脚本 %d 条，对不上" % (len(wavs), len(SCRIPT)))
         return 1
