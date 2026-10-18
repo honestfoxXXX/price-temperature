@@ -66,11 +66,11 @@ def main():
 
     # 顶部标识
     d.rounded_rectangle([(76, 56), (116, 96)], radius=13, fill=ORANGE)
-    d.text((96, 76), "物", font=font(FONT_BOLD, 21), fill="#ffffff", anchor="mm")
+    d.text((96, 76), "价", font=font(FONT_BOLD, 21), fill="#ffffff", anchor="mm")
 
     wm = font(FONT_BOLD, 27)
-    d.text((130, 58), "物价温度", font=wm, fill=INK)
-    d.text((130 + d.textlength("物价温度", font=wm) + 14, 68), "今天买什么划算",
+    d.text((130, 58), "今天贵不贵", font=wm, fill=INK)
+    d.text((130 + d.textlength("今天贵不贵", font=wm) + 14, 68), "什么该买，什么该等",
            font=font(FONT_REG, 14), fill=MUTED)
     d.text((W - 76, 68), "数据截至 " + meta["asOf"], font=font(FONT_REG, 16), fill=MUTED, anchor="ra")
 
