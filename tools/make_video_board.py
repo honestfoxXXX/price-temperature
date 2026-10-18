@@ -58,9 +58,10 @@ BOARDS = [
          ("🍄", "平菇", "果蔬", "−7.9%", "本周"),
      ]},
     {"title": "先别碰", "note": "位置高，还在涨", "color": TAUPE, "caption": "",
+     "footnote": "结论依据：官方价格 + 近 4 年涨幅，不含预测",
      "items": [
          ("🎮", "显卡", "数码", "+60%", "同比"),
-         ("🧥", "羽绒服", "衣着", "+12%", "同比"),
+         ("📺", "视频会员", "文娱", "+13.6%", "同比"),
      ]},
 ]
 
@@ -82,7 +83,7 @@ CAPTIONS = [
     "生菜 −9.7%",
     "平菇 −7.9%",
     "显卡 +60%，先别碰",
-    "羽绒服 +12%，也一样",
+    "视频会员四年涨了四次",
     "关注，每周日更新",
 ]
 
@@ -164,6 +165,11 @@ def draw_board(img, board, active, slide_from, slide_p, elapsed):
 
     y = active if (slide_from is None or slide_p >= 1) else lerp(slide_from, active, ease(slide_p))
     card_y = int(top + y * rh)
+
+    if board.get("footnote"):
+        fw = d.textlength(board["footnote"], font=ImageFont.truetype(FR, 24))
+        d.text(((W - fw) / 2, top + n * rh + 34), board["footnote"],
+               font=ImageFont.truetype(FR, 24), fill=MUTED + (a,))
 
     img.alpha_composite(shadow_for(rh), (ROW_X - 90, card_y - 90))
     ImageDraw.Draw(img).rounded_rectangle(
@@ -265,6 +271,22 @@ def build_audio(wavs, starts, total, out_path):
         if i + n < len(buf):
             tt = np.arange(n) / SR
             buf[i:i + n] += (np.sin(2 * np.pi * 1500 * tt) * np.exp(-tt * 70) * 0.16).astype(np.float32)
+    # 配乐铺底：循环到视频长度，首尾淡入淡出，压在 -20dB 附近
+    bgm_path = out_path.parent / "_bgm.wav"
+    if bgm_path.exists():
+        with wave.open(str(bgm_path)) as w:
+            b = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16)
+        b = b.astype(np.float32) / 32768.0
+        if len(b) < int(total * SR):
+            b = np.tile(b, int(np.ceil(total * SR / len(b)) + 1))
+        b = b[:int(total * SR)]
+        fi, fo = int(0.8 * SR), int(1.6 * SR)
+        if fi > 0:
+            b[:fi] *= np.linspace(0, 1, fi, dtype=np.float32)
+        if fo > 0:
+            b[-fo:] *= np.linspace(1, 0, fo, dtype=np.float32)
+        buf[:len(b)] += b * 0.11
+
     peak = float(np.max(np.abs(buf))) or 1.0
     if peak > 0.02:
         buf *= min(4.0, 0.92 / peak)
