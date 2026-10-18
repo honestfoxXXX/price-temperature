@@ -1,0 +1,10 @@
+﻿# 沙箱/本地产物，不发布
+.acl-recovery/
+tools/preview.png
+tools/_*
+视觉样张.html
+
+# 系统
+Thumbs.db
+desktop.ini
+.DS_Store
