@@ -17,6 +17,8 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 DATA = ROOT / "data" / "prices.json"
 HIST = ROOT / "data" / "history.json"
+WATCH = ROOT / "data" / "watchlist.json"
+CPIDATA = ROOT / "data" / "cpi.json"
 TPL = ROOT / "template" / "index.template.html"
 OUT = ROOT / "index.html"
 TOKEN = "__PRICE_DATA__"
@@ -112,6 +114,40 @@ def main():
     else:
         print("  [!] 没有 history.json，卡片不会画走势；先跑 python tools/seed_history.py")
 
+    # ---- 监控池 ----
+    cat_ids = {c["id"] for c in cats}
+    watch = []
+    if WATCH.exists():
+        try:
+            w = json.loads(WATCH.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            errors.append("watchlist.json 语法错误：%s 行 %s" % (e.msg, e.lineno))
+        else:
+            for it in w.get("items") or []:
+                tag = "watch/%s" % it.get("id", "?")
+                for key in ("id", "name", "cat", "source", "asOf"):
+                    if not it.get(key):
+                        errors.append("%s 缺少字段 %s" % (tag, key))
+                if it.get("cat") not in cat_ids:
+                    errors.append("%s 的 cat 不在品类里：%s" % (tag, it.get("cat")))
+                if it.get("mom") is None and it.get("yoy") is None:
+                    errors.append("%s 至少要有一个变化指标" % tag)
+                if it.get("quality") not in QUALITIES:
+                    errors.append("%s quality 非法：%s" % (tag, it.get("quality")))
+                watch.append(it)
+            data["watch"] = watch
+    else:
+        print("  [!] 没有 watchlist.json，监控池为空")
+
+    # ---- CPI 分项（查漏基准）----
+    if CPIDATA.exists():
+        try:
+            data["cpi"] = json.loads(CPIDATA.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            errors.append("cpi.json 语法错误：%s 行 %s" % (e.msg, e.lineno))
+    else:
+        print("  [!] 没有 cpi.json，「覆盖缺口」区块不会出现")
+
     if errors:
         print("[x] 校验未通过，共 %d 个问题：" % len(errors))
         for e in errors:
@@ -146,6 +182,12 @@ def main():
         n = len((hist.get("series") or {}))
         pts = sum(len(v) for v in (hist.get("series") or {}).values())
         print("     走势：%d 条有曲线，共 %d 个价格点" % (n, pts))
+    if watch:
+        print("     监控池：%d 条（不进卡片，只参与异动检测）" % len(watch))
+    if data.get("cpi"):
+        gaps = [r for r in data["cpi"].get("rows", []) if not r.get("covered")]
+        print("     CPI %s：%d 个分项，其中 %d 个是覆盖缺口"
+              % (data["cpi"]["meta"]["period"], len(data["cpi"]["rows"]), len(gaps)))
     return 0
 
 

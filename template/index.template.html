@@ -291,6 +291,40 @@
   .qt-媒体{background:#e9eff8;color:#2f5285}
   .qt-估算{background:#f4efe8;color:#7a6650}
 
+  /* ---------- radar ---------- */
+  .radar{margin-top:26px;background:#fff;border-radius:18px;padding:16px 16px 8px;box-shadow:var(--sh-sm)}
+  .radar-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}
+  .radar-head h2{font-size:14px;font-weight:800;color:var(--ink);letter-spacing:.02em}
+  .radar-head span{font-size:10.5px;color:var(--muted)}
+  .radar-list{display:flex;flex-wrap:wrap;gap:7px;padding:6px 0 10px}
+  .radar-list .rchip{
+    display:inline-flex;align-items:center;gap:6px;padding:7px 12px;
+    border:1px solid var(--line);border-radius:99px;background:#fffdfb;
+    font-size:12.5px;cursor:pointer;transition:.15s;
+  }
+  .radar-list .rchip:hover{border-color:#f0d9c8;background:#fff}
+  .radar-list .ic{font-size:13px;line-height:1}
+  .radar-list b{font-weight:700;color:var(--ink)}
+  .radar-list .chg{font-weight:800;font-variant-numeric:tabular-nums;font-size:12px}
+
+  /* ---------- watch list ---------- */
+  .watch{margin-top:30px}
+  .watch-note,.gaps-note{font-size:11.5px;color:var(--muted);margin:6px 0 10px;line-height:1.6}
+  .watch-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+  .watch-list li{display:flex;align-items:baseline;gap:6px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--line)}
+  .watch-list .nm{color:var(--ink2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .watch-list .chg{font-variant-numeric:tabular-nums;font-weight:700;flex:none}
+
+  /* ---------- gaps ---------- */
+  .gaps{margin-top:30px;background:#fff8ee;border:1px solid #f6e3c8;border-radius:18px;padding:16px}
+  .gaps .sec-head{margin-bottom:4px}
+  .gap-list li{display:flex;align-items:baseline;gap:8px;padding:7px 0;border-top:1px solid #f3e6d2;font-size:12.5px}
+  .gap-list li:first-child{border-top:0}
+  .gap-list b{color:var(--ink);font-weight:700;flex:none}
+  .gap-list .why{font-size:10.5px;color:#b08a5c;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gap-list .chg{font-variant-numeric:tabular-nums;font-weight:800;flex:none}
+  @media (max-width:700px){ .radar-list .src{display:none} }
+
   /* ---------- footer ---------- */
   .foot{margin-top:44px;background:linear-gradient(180deg,rgba(255,246,238,0),#fff5ec 40%);padding:26px 0 60px}
   .foot h3{font-size:10.5px;letter-spacing:.16em;color:var(--muted);font-weight:700;margin:22px 0 9px}
@@ -348,6 +382,14 @@
     <div class="acts" id="act"></div>
   </section>
 
+  <section class="radar" id="radar" hidden>
+    <div class="radar-head">
+      <h2>本期异动</h2>
+      <span>监控池 23 条里，本周变化最大的</span>
+    </div>
+    <ul class="radar-list" id="radar-list"></ul>
+  </section>
+
   <section class="index">
     <div class="idx-head"><h2>品类概览</h2><span>点一下筛到该品类</span></div>
     <div class="idx-list" id="temp"></div>
@@ -373,6 +415,24 @@
 
   <div id="list"></div>
   <p class="empty" id="empty" hidden>没有匹配的条目。</p>
+
+  <section class="watch" id="watch" hidden>
+    <div class="sec-head">
+      <h2>监控中</h2>
+      <span class="sec-pos lvl-mid" id="watch-count"></span>
+    </div>
+    <p class="watch-note">这些条目不进卡片、不写解读，只在上表里参与异动检测。</p>
+    <ul class="watch-list" id="watch-list"></ul>
+  </section>
+
+  <section class="gaps" id="gaps" hidden>
+    <div class="sec-head">
+      <h2>覆盖缺口</h2>
+      <span class="sec-pos lvl-high">官方在动、我们还没跟的</span>
+    </div>
+    <p class="gaps-note" id="gaps-note"></p>
+    <ul class="gap-list" id="gap-list"></ul>
+  </section>
 </main>
 
 <footer class="foot">
@@ -452,9 +512,21 @@
   var byId = {};
   items.forEach(function(i){ byId[i.id] = i; });
 
+  /* 监控池：只进 byId（供弹层用），不进 items（不渲染卡片） */
+  var catById = {};
+  D.categories.forEach(function(x){ catById[x.id] = x; });
+  (D.watch || []).forEach(function(w){
+    var cc = catById[w.cat] || {};
+    w.catId = w.cat; w.catName = cc.name || ''; w.catIcon = cc.icon || '';
+    w.icon = ICONS[w.id] || cc.icon || '';
+    w.verdict = 'watch'; w.reason = w.note || ''; w.watch = true;
+    if (!byId[w.id]) byId[w.id] = w;
+  });
+
   var V = {
     buy:     {label:'现在买划算', cls:'buy'},
     neutral: {label:'价格平稳',   cls:'neutral'},
+    watch:   {label:'监控中',     cls:'neutral'},
     wait:    {label:'再忍忍',     cls:'wait'},
     must:    {label:'躲不掉',     cls:'must'}
   };
@@ -498,6 +570,11 @@
   }
   function priceMain(it){
     if (it.priceText) return {text: it.priceText, tiny: true, unit: '', alt: ''};
+    if (typeof it.price !== 'number'){
+      var hm = it.mom !== null && it.mom !== undefined;
+      return {text: (hm ? pct(it.mom) : pct(it.yoy)) || '—', tiny: false,
+              unit: hm ? '环比' : '同比', alt: ''};
+    }
     var v = view(it);
     if (v.factor === 1) return {text: fmt(it.price), tiny: false, unit: it.unit || '', alt: ''};
     return {text: qty(it.price * v.factor), tiny: false, unit: v.unit,
@@ -757,7 +834,8 @@
       '<div><dt>数据来源</dt><dd>' + esc(it.source) + '</dd></div>' +
       '<div><dt>口径</dt><dd><span class="qt qt-' + it.quality + '">' + it.quality + '</span></dd></div>' +
       '<div><dt>数据时点</dt><dd class="num">' + it.asOf + '</dd></div>' +
-      '<div><dt>近五年位置</dt><dd class="num">' + it.pct5 + ' · ' + level(it.pct5).lbl + '</dd></div>';
+      '<div><dt>近五年位置</dt><dd class="num">' +
+        (typeof it.pct5 === 'number' ? it.pct5 + ' · ' + level(it.pct5).lbl : '未采集') + '</dd></div>';
 
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -844,9 +922,82 @@
     return '<li><b>' + c.date + '</b><span>' + esc(c.text) + '</span></li>';
   }).join('');
 
+  /* ---------- radar ---------- */
+  function renderRadar(){
+    var box = document.getElementById('radar');
+    /* 只看监控池：发布池的条目已经以卡片形式展示，且其中不少是「一次性调价」，
+       混进来会盖掉真正的月度波动 */
+    var pool = [];
+    (D.watch || []).forEach(function(w){
+      if (typeof w.mom === 'number' && Math.abs(w.mom) >= 3) pool.push({it: w, val: w.mom, kind: 'mom'});
+      else if (typeof w.yoy === 'number' && Math.abs(w.yoy) >= 15) pool.push({it: w, val: w.yoy, kind: 'yoy'});
+    });
+    pool.sort(function(a, b){ return Math.abs(b.val) - Math.abs(a.val); });
+    var out = pool.slice(0, 10);
+    if (!out.length){ box.hidden = true; return; }
+    box.hidden = false;
+    document.getElementById('radar-list').innerHTML = out.map(function(x){
+      var it = x.it;
+      return '<li class="rchip" data-id="' + it.id + '" title="' + esc(it.source || '') + '">' +
+        '<span class="ic">' + (it.icon || it.catIcon || '·') + '</span>' +
+        '<b>' + esc(it.name) + '</b>' +
+        '<span class="chg ' + (x.val > 0 ? 'up' : 'down') + '">' +
+          (pct(x.val) || '—') + '</span></li>';
+    }).join('');
+  }
+
+  /* ---------- watch list ---------- */
+  function renderWatch(){
+    var box = document.getElementById('watch');
+    var w = D.watch || [];
+    if (!w.length){ box.hidden = true; return; }
+    box.hidden = false;
+    document.getElementById('watch-count').textContent = w.length + ' 条在盯';
+    var s = w.slice().sort(function(a, b){
+      return Math.abs(b.mom || 0) - Math.abs(a.mom || 0);
+    });
+    document.getElementById('watch-list').innerHTML = s.map(function(it){
+      var v = (it.mom !== null && it.mom !== undefined) ? it.mom : it.yoy;
+      return '<li><span class="nm">' + esc(it.name) + '</span>' +
+             '<span class="chg ' + (v > 0 ? 'up' : v < 0 ? 'down' : 'flat') + '">' +
+             (pct(v) || '—') + '</span></li>';
+    }).join('');
+  }
+
+  /* ---------- coverage gaps ---------- */
+  function renderGaps(){
+    var box = document.getElementById('gaps');
+    var cpi = D.cpi;
+    if (!cpi || !cpi.rows || !cpi.rows.length){ box.hidden = true; return; }
+    var gaps = cpi.rows.filter(function(r){ return !r.covered; })
+      .sort(function(a, b){ return Math.abs(b.yoy || b.mom || 0) - Math.abs(a.yoy || a.mom || 0); });
+    if (!gaps.length){ box.hidden = true; return; }
+    box.hidden = false;
+    var h = cpi.meta.headline || {};
+    document.getElementById('gaps-note').textContent =
+      cpi.meta.period + ' CPI 同比 ' + (pct(h.yoy) || '—') + '、环比 ' + (pct(h.mom) || '—') +
+      '。下面这些分项在动，但站里还没有对应条目——这就是盲区。';
+    document.getElementById('gap-list').innerHTML = gaps.map(function(r){
+      var isMom = (r.yoy === null || r.yoy === undefined);
+      var v = isMom ? r.mom : r.yoy;
+      return '<li><b>' + esc(r.name) + '</b>' +
+             '<span class="why">' + esc(r.why || '') + '</span>' +
+             '<span class="chg ' + (v > 0 ? 'up' : 'down') + '">' +
+             (isMom ? '环比 ' : '同比 ') + (pct(v) || '—') + '</span></li>';
+    }).join('');
+  }
+
+  document.getElementById('radar').addEventListener('click', function(e){
+    var el = e.target.closest('[data-id]');
+    if (el) showModal(el.getAttribute('data-id'));
+  });
+
   /* ---------- boot ---------- */
   renderFilters();
   renderIndex();
+  renderRadar();
+  renderWatch();
+  renderGaps();
   render();
 })();
 </script>

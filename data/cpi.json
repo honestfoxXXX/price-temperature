@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "period": "2026 年 9 月",
+    "source": "国家统计局 2026-10-14",
+    "url": "https://www.jxxf.gov.cn/xfxxxgk/tjixxx/202610/7f31fe6412ba475d9f9f555d333d537a.shtml",
+    "headline": { "yoy": 0.9, "mom": 0.2 },
+    "note": "用统计局的分项排名反查覆盖缺口：covered=false 的就是「官方显示在动、但我们还没跟」的品类。"
+  },
+  "rows": [
+    { "name": "数据存储设备", "yoy": null, "mom": 46.7, "covered": true, "why": "内存、SSD 已在监控" },
+    { "name": "平板电脑", "yoy": null, "mom": 23.6, "covered": false, "why": "存储涨价传导到整机" },
+    { "name": "其他用品及服务", "yoy": 5.9, "mom": null, "covered": false, "why": "含首饰、家政等杂项" },
+    { "name": "交通通信", "yoy": 4.3, "mom": null, "covered": true, "why": "" },
+    { "name": "医疗服务", "yoy": 4.0, "mom": null, "covered": false, "why": "挂号、诊疗费" },
+    { "name": "计算机", "yoy": null, "mom": 3.7, "covered": false, "why": "整机跟随存储成本" },
+    { "name": "医疗保健", "yoy": 2.7, "mom": null, "covered": true, "why": "" },
+    { "name": "出行服务", "yoy": 2.1, "mom": null, "covered": false, "why": "机票、住宿、旅游团" },
+    { "name": "教育文化娱乐", "yoy": 1.4, "mom": null, "covered": true, "why": "" },
+    { "name": "衣着", "yoy": 1.2, "mom": null, "covered": true, "why": "" },
+    { "name": "生活用品及服务", "yoy": 0.2, "mom": null, "covered": true, "why": "" },
+    { "name": "居住", "yoy": -0.3, "mom": null, "covered": true, "why": "" },
+    { "name": "蛋类", "yoy": 14.3, "mom": 2.0, "covered": true, "why": "" },
+    { "name": "鲜菜", "yoy": -8.1, "mom": 0.5, "covered": true, "why": "" },
+    { "name": "猪肉", "yoy": -10.0, "mom": 1.2, "covered": true, "why": "" }
+  ]
+}
