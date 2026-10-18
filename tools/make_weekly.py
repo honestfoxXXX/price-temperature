@@ -28,6 +28,9 @@ EDGE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 WIDTH = 750           # 公众号按 750 显示，1:1 取图，避免缩放糊掉
 MAX_H = 20000
 
+# 这两块是给网站维护看的，长图里是噪音
+HIDE = "<style>.h-src,.h-log,.src,.log{display:none!important}</style>"
+
 PROBE = """
 <script>
 window.addEventListener("load", function(){
@@ -43,11 +46,20 @@ def file_url(p):
     return pathlib.Path(p).resolve().as_uri()
 
 
+def prepare(html_path, with_probe):
+    src = html_path.read_text(encoding="utf-8")
+    src = src.replace("</head>", HIDE + "</head>", 1)
+    if with_probe:
+        src = src.replace("</body>", PROBE, 1)
+    tmp = pathlib.Path(tempfile.gettempdir()) / (
+        "_measure.html" if with_probe else "_shot.html")
+    tmp.write_text(src, encoding="utf-8")
+    return tmp
+
+
 def measure_height(html_path):
     """让页面把自己的高度写进 title，再用 --dump-dom 读回来。"""
-    src = html_path.read_text(encoding="utf-8")
-    tmp = pathlib.Path(tempfile.gettempdir()) / "_measure.html"
-    tmp.write_text(src.replace("</body>", PROBE), encoding="utf-8")
+    tmp = prepare(html_path, True)
 
     out = subprocess.run(
         [EDGE, "--headless=new", "--disable-gpu", "--dump-dom",
@@ -62,13 +74,14 @@ def measure_height(html_path):
 
 
 def shoot(html_path, out_path, height):
+    tmp = prepare(html_path, False)
     subprocess.run(
         [EDGE, "--headless=new", "--disable-gpu", "--hide-scrollbars",
          "--virtual-time-budget=6000",
          f"--window-size={WIDTH},{height}",
          "--user-data-dir=" + str(pathlib.Path(tempfile.gettempdir()) / "_edgedata"),
          "--screenshot=" + str(out_path),
-         file_url(html_path)],
+         file_url(tmp)],
         capture_output=True, timeout=180,
     )
 
