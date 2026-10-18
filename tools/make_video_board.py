@@ -68,7 +68,7 @@ SCRIPT = [
     ("board", 1),
     ("item", (1, 0)), ("item", (1, 1)), ("item", (1, 2)), ("item", (1, 3)),
     ("board", 2),
-    ("end", None),
+    ("end", None), ("end", None),
 ]
 
 _SHADOWS = {}
@@ -171,14 +171,20 @@ def intro_screen(img):
 
 def end_screen(img):
     d = ImageDraw.Draw(img)
-    d.text((54, 680), "该买的趁现在", font=ImageFont.truetype(FB, 92), fill=INK)
-    d.text((54, 806), "该等的别急", font=ImageFont.truetype(FB, 92), fill=RED)
-    d.line([(54, 960), (W - 54, 960)], fill=LINE, width=3)
-    d.text((54, 1000), "70 个条目，每周日更新", font=ImageFont.truetype(FR, 32), fill=MUTED)
-    d.text((54, 1054), "honestfoxXXX.github.io/price-temperature",
-           font=ImageFont.truetype(FB, 29), fill=INK)
-    icon = Image.open(ASSETS / "logo-icon-256.png").convert("RGBA").resize((170, 170), Image.LANCZOS)
-    img.alpha_composite(icon, ((W - 170) // 2, 1260))
+    d.text((54, 590), "该买的趁现在", font=ImageFont.truetype(FB, 92), fill=INK)
+    d.text((54, 710), "该等的别急", font=ImageFont.truetype(FB, 92), fill=RED)
+    d.line([(54, 870), (W - 54, 870)], fill=LINE, width=3)
+
+    d.text((54, 920), "每周日更新", font=ImageFont.truetype(FB, 50), fill=INK)
+    d.text((54, 992), "一周只讲一次，讲清楚哪几样值得买、哪几样先别碰",
+           font=ImageFont.truetype(FR, 30), fill=MUTED)
+
+    bx0, by0, bx1, by1 = 54, 1100, 614, 1224
+    d.rounded_rectangle([(bx0, by0), (bx1, by1)], radius=62, fill=ORANGE)
+    d.text(((bx0 + bx1) / 2, (by0 + by1) / 2), "点个关注，不吃亏",
+           font=ImageFont.truetype(FB, 44), fill=(255, 255, 255), anchor="mm")
+
+    d.text((54, 1270), "下期见", font=ImageFont.truetype(FR, 30), fill=(190, 170, 156))
 
 
 def build_audio(wavs, starts, total, out_path):
