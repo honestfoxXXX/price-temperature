@@ -27,6 +27,47 @@ GREEN = (15, 138, 61)
 BG1, BG2 = (255, 248, 242), (255, 233, 218)
 
 
+
+def gradient(size, top=BG1, bot=BG2):
+    w, h = size
+    img = Image.new("RGB", (w, h))
+    d = ImageDraw.Draw(img)
+    for y in range(h):
+        t = y / (h - 1)
+        d.line([(0, y), (w, y)], fill=(
+            int(top[0] + (bot[0] - top[0]) * t),
+            int(top[1] + (bot[1] - top[1]) * t),
+            int(top[2] + (bot[2] - top[2]) * t)))
+    return img
+
+
+def vertical_cover(path, size=(1080, 1440), safe=True):
+    """视频号封面。3:4 用于主页和推荐流，9:16 可直接当首帧。"""
+    w, h = size
+    img = gradient((w, h))
+    d = ImageDraw.Draw(img)
+
+    icon = Image.open(ASSETS / "logo-icon-256.png").convert("RGBA").resize((88, 88), Image.LANCZOS)
+    img.paste(icon, (72, 84), icon)
+    d.text((182, 96), "今天贵不贵", font=ImageFont.truetype(FB, 46), fill=INK)
+    d.text((182, 156), "什么该买，什么该等", font=ImageFont.truetype(FR, 25), fill=MUTED)
+
+    cy = int(h * 0.40)
+    d.text((72, cy - 150), "这一个月涨得最狠的", font=ImageFont.truetype(FB, 44), fill=MUTED)
+    f = ImageFont.truetype(FB, 210 if w < 1100 else 190)
+    d.text((64, cy - 92), "+46.7%", font=f, fill=RED)
+    d.text((74, cy + 178), "数据存储设备", font=ImageFont.truetype(FB, 62), fill=INK)
+
+    d.line([(72, cy + 286), (w - 72, cy + 286)], fill=(240, 224, 212), width=3)
+    d.text((74, cy + 322), "同一个星期，叶菜在崩", font=ImageFont.truetype(FR, 34), fill=MUTED)
+    d.text((74, cy + 378), "菠菜 −10.5%", font=ImageFont.truetype(FB, 58), fill=GREEN)
+
+    d.text((74, h - 120), "第 42 周 · 每周日更新", font=ImageFont.truetype(FR, 30), fill=MUTED)
+    img.save(path, optimize=True)
+    return path
+
+
+
 def main():
     day = sys.argv[1] if len(sys.argv) > 1 else datetime.date.today().isoformat()
     outdir = ROOT / "output" / day
@@ -66,6 +107,11 @@ def main():
     out = outdir / "封面.png"
     img.save(out, optimize=True)
     print("[ok] %s  %dx%d  %.0f KB" % (out, W, H, out.stat().st_size / 1024))
+
+    for hh, label in ((1440, "3x4"), (1260, "6x7"), (1920, "9x16")):
+        p = outdir / ("封面-视频号-%s.png" % label)
+        vertical_cover(p, (1080, hh))
+        print("[ok] %s  %.0f KB" % (p.name, p.stat().st_size / 1024))
     return 0
 
 
