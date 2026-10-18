@@ -61,7 +61,12 @@ const checks = [
   ['异动雷达有内容', count((store['radar-list'] || {}).innerHTML || '', /<li class="rchip" data-id=/g) > 0,
     `${count((store['radar-list'] || {}).innerHTML || '', /<li class="rchip" data-id=/g)} 条`],
   ['监控池已渲染', ((store['watch-list']||{}).innerHTML||'').split('<li>').length - 1 === (D.watch||[]).length, `${((store['watch-list']||{}).innerHTML||'').split('<li>').length - 1} / ${(D.watch||[]).length}`],
-  ['覆盖缺口已渲染', ((store['gap-list']||{}).innerHTML||'').split('<li>').length - 1 === (D.cpi?D.cpi.rows.filter(r=>!r.covered).length:0), ''],
+  ['覆盖缺口已渲染', (() => {
+    const rows = D.cpi ? D.cpi.rows : [];
+    const want = rows.filter(r => !r.covered).length || rows.filter(r => r.added).length;
+    const got = (((store['gap-list'] || {}).innerHTML || '').split('<li>').length - 1);
+    return got === want;
+  })(), ''],
   ['信源已渲染', count(src, /<li>/g) === D.sources.length, `${count(src, /<li>/g)} / ${D.sources.length}`],
   ['标题已注入', (store['asof'] || {}).textContent === D.meta.asOf, `asOf=${(store['asof'] || {}).textContent}`],
   ['无未替换占位符', !html.includes('__PRICE_DATA__'), ''],
