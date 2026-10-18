@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -222,6 +222,7 @@
   .card .p b{font-size:22px;font-weight:800;letter-spacing:-.035em;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
   .card .p b.tiny{font-size:17px;letter-spacing:-.01em}
   .card .p i{font-style:normal;font-size:10.5px;color:var(--muted)}
+  .card .p .alt{font-style:normal;font-size:9px;color:#c9b5a4;margin-left:3px;font-weight:400;letter-spacing:0}
   .card .d{font-size:11.5px;font-variant-numeric:tabular-nums;font-weight:700}
   .card .d .mom{font-weight:400;color:var(--muted);margin-left:6px;font-size:10.5px}
   .spark{display:block;width:100%;height:26px}
@@ -268,6 +269,7 @@
   .sheet .p{display:flex;align-items:baseline;gap:5px;margin:16px 0 1px}
   .sheet .p b{font-size:38px;font-weight:800;letter-spacing:-.04em;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
   .sheet .p i{font-style:normal;font-size:12px;color:var(--muted)}
+  .sheet .p .alt{font-style:normal;font-size:10.5px;color:#c9b5a4;margin-left:6px;font-weight:400}
   .sheet .d{font-size:13.5px;font-variant-numeric:tabular-nums;font-weight:700}
   .sheet .ref{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
   .sheet .spark{height:76px;margin-top:12px}
@@ -484,9 +486,22 @@
     if (n === null || n === undefined) return null;
     return (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n)) + '%';
   }
+  /* 国内按斤计价，官方口径是元/公斤：展示折成元/斤，公斤数留在旁边备查 */
+  function view(it){
+    if (it.unit === '元/公斤') return {factor: 0.5, unit: '元/斤', altUnit: '元/公斤'};
+    return {factor: 1, unit: it.unit || '', altUnit: ''};
+  }
+  function qty(n){
+    if (n >= 1000) return Math.round(n).toLocaleString('zh-CN');
+    if (n >= 100) return n.toLocaleString('zh-CN', {minimumFractionDigits:1, maximumFractionDigits:1});
+    return n.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
   function priceMain(it){
-    if (it.priceText) return {text: it.priceText, tiny: true};
-    return {text: fmt(it.price), tiny: false};
+    if (it.priceText) return {text: it.priceText, tiny: true, unit: '', alt: ''};
+    var v = view(it);
+    if (v.factor === 1) return {text: fmt(it.price), tiny: false, unit: it.unit || '', alt: ''};
+    return {text: qty(it.price * v.factor), tiny: false, unit: v.unit,
+            alt: fmt(it.price) + ' ' + v.altUnit};
   }
   function mIdx(d){
     var p = String(d).split('-');
@@ -537,16 +552,19 @@
     } else {
       return null;
     }
-    var d = latest - ref.v;
+    var v = view(it);
+    var d = (latest - ref.v) * v.factor;
     if (!isFinite(d) || Math.abs(d) < 0.05) return null;
     var abs = Math.abs(d);
-    var n = abs >= 1000 ? Math.round(abs).toLocaleString('zh-CN')
-          : abs < 10 ? abs.toFixed(1)
-          : String(Math.round(abs));
-    var unit = it.unit ? ' ' + it.unit : '';
+    var n = v.factor === 1
+      ? (abs >= 1000 ? Math.round(abs).toLocaleString('zh-CN')
+         : abs < 10 ? abs.toFixed(1)
+         : String(Math.round(abs)))
+      : qty(abs);
+    var unit = v.unit ? ' ' + v.unit : '';
     return {
       text: (d < 0 ? '比一年前便宜 ' : '比一年前贵 ') + n + unit,
-      ref: ref.d + ' · ' + fmt(ref.v) + unit,
+      ref: ref.d + ' · ' + (v.factor === 1 ? fmt(ref.v) : qty(ref.v * v.factor)) + unit,
       cls: d < 0 ? 'down' : 'up'
     };
   }
@@ -629,7 +647,8 @@
           '<span class="pill ' + v.cls + '">' + v.label + '</span>' +
         '</div>' +
         '<div class="p"><b class="num' + (p.tiny ? ' tiny' : '') + '">' + p.text + '</b>' +
-          (p.tiny ? '' : '<i>' + esc(it.unit || '') + '</i>') + '</div>' +
+          (p.tiny ? '' : '<i>' + esc(p.unit) + '</i>') +
+          (p.alt ? '<em class="alt">' + p.alt + '</em>' : '') + '</div>' +
         '<div class="d">' + line + (momTxt ? '<span class="mom">环比 ' + momTxt + '</span>' : '') + '</div>' +
       '</div>' +
       sparkSVG(it) +
@@ -710,7 +729,8 @@
     document.getElementById('m-title').textContent = it.name;
     document.getElementById('m-spec').textContent = it.catName + ' · ' + it.spec;
     document.getElementById('m-price').innerHTML =
-      '<b class="num">' + p.text + '</b>' + (it.unit ? '<i>' + esc(it.unit) + '</i>' : '');
+      '<b class="num">' + p.text + '</b>' + (p.unit ? '<i>' + esc(p.unit) + '</i>' : '') +
+      (p.alt ? '<em class="alt">' + p.alt + '</em>' : '');
     document.getElementById('m-delta').className = 'd ' + (d ? d.cls : 'flat');
     document.getElementById('m-delta').textContent = d ? d.text : '同比 ' + (pct(it.yoy) || '—');
     document.getElementById('m-ref').textContent =
@@ -720,8 +740,10 @@
     var svg = sparkSVG(it, {h:76});
     if (svg){
       var ser = D.history[it.id];
-      ch.innerHTML = svg + '<div class="cap"><span>' + ser[0].d + ' · ' + fmt(ser[0].v) + '</span>' +
-        '<span>' + ser[ser.length - 1].d + ' · ' + fmt(ser[ser.length - 1].v) + '</span></div>';
+      var vu = view(it);
+      var cv = function(x){ return vu.factor === 1 ? fmt(x) : qty(x * vu.factor); };
+      ch.innerHTML = svg + '<div class="cap"><span>' + ser[0].d + ' · ' + cv(ser[0].v) + '</span>' +
+        '<span>' + ser[ser.length - 1].d + ' · ' + cv(ser[ser.length - 1].v) + '</span></div>';
     } else {
       ch.innerHTML = '';
     }
