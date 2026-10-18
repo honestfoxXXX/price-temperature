@@ -247,9 +247,10 @@ def build_audio(wavs, starts, total, out_path):
         if i + n < len(buf):
             tt = np.arange(n) / SR
             buf[i:i + n] += (np.sin(2 * np.pi * 1500 * tt) * np.exp(-tt * 70) * 0.16).astype(np.float32)
+    # 统一响度：不同音色的原始电平差很多，这里一律拉到接近满刻度
     peak = float(np.max(np.abs(buf))) or 1.0
-    if peak > 0.97:
-        buf *= 0.97 / peak
+    if peak > 0.02:
+        buf *= min(4.0, 0.92 / peak)
     with wave.open(str(out_path), "wb") as w:
         w.setnchannels(1)
         w.setsampwidth(2)
@@ -260,7 +261,7 @@ def build_audio(wavs, starts, total, out_path):
 def main():
     day = sys.argv[1] if len(sys.argv) > 1 else "2026-10-18"
     vdir = ROOT / "output" / day / "视频"
-    wavs = sorted((vdir / "_tts4").glob("c*.wav"))
+    wavs = sorted((vdir / "_tts5").glob("c*.wav"))
     if len(wavs) != len(SCRIPT):
         print("[x] 配音 %d 条 / 脚本 %d 条，对不上" % (len(wavs), len(SCRIPT)))
         return 1
