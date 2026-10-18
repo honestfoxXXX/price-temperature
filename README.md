@@ -42,7 +42,7 @@
 - **GitHub Pages / Cloudflare Pages / Vercel**：把仓库推上去，根目录有 `index.html` 就行，免备案
 - **国内对象存储 + CDN**：国内访问更快，但**域名需要 ICP 备案**，这是硬门槛
 
-上线前必须改一处：`og:image` 现在是相对路径 `assets/og.png`，而社交平台抓缩略图要绝对地址。改 `template/index.template.html` 里的 `<meta property="og:image">`，换成 `https://你的域名/assets/og.png`，再重新 build。
+`og:image` 已经写死成绝对地址 `https://honestfoxXXX.github.io/price-temperature/assets/og.png`。**如果换了域名或仓库名，记得改 `template/index.template.html` 里的这行和 `canonical`，再重新 build**，否则社交平台抓不到缩略图。
 
 也可以顺手改一下 `<title>` 和 `description`，以及 `assets/og.png` 的文案（`tools/make_og.py` 里改）。
 
@@ -72,6 +72,60 @@ node tools/smoke.js
 `build.py` 的校验项：条目字段齐全、`verdict` 和 `quality` 在枚举内、`pct5` 是 0–100 整数、`id` 不重复、每条至少有 `price` 或 `priceText`、数据里不含 `</script>`。校验通过才会写文件，不会产出半成品。
 
 **为什么要跑构建而不是直接改 HTML**：页面里的卡片、榜单、统计数字全是运行时按数据算出来的。手改 HTML 下次构建会被覆盖，而且统计和榜单会跟卡片对不上。
+
+---
+
+## 怎么扩展
+
+三种扩展方式，成本差别很大，按需要选。
+
+### 1. 加监控条目（最便宜，优先用这个）
+
+改 `data/watchlist.json`，往 `items` 里塞一条：
+
+```json
+{
+  "id": "w-tablet",
+  "name": "平板电脑",
+  "cat": "digital",
+  "mom": 23.6,
+  "yoy": null,
+  "note": "存储涨价传导到整机。",
+  "source": "国家统计局 CPI 2026 年 9 月",
+  "quality": "官方",
+  "asOf": "2026-10-14"
+}
+```
+
+- `id` 唯一，建议 `w-` 前缀
+- `cat` 必须是 `prices.json` 里已有的品类 id
+- `mom`（环比）和 `yoy`（同比）**至少要有一个**，否则构建会拒绝
+- `quality` 只能是 `官方` / `媒体` / `估算`
+
+这类条目的特点：**不渲染卡片、不写结论、不占版面**。它只出现在「监控中」列表里，并在变化超过阈值时被推进「本期异动」。所以你不用为它写分析，填个数就行。
+
+异动阈值：`|环比| ≥ 3%` 或 `|同比| ≥ 15%`。
+
+### 2. 升级成正式卡片
+
+某条监控反复异动、值得给结论时，把它从 `watchlist.json` 搬到 `prices.json` 的对应品类里，补齐 `spec` / `verdict` / `pct5` / `reason`。它会自动获得卡片、走势图、结论标签。
+
+搬完之后记得在 `cpi.json` 里把对应分项标成 `covered: true`，缺口区就不会再报它。
+
+### 3. 更新 CPI 基准（每月一次）
+
+`data/cpi.json` 是「查漏」的对照组。统计局每月发布后更新：`meta.headline` 的同比环比、`rows` 里的分项数值。
+
+- 新出现且我们没覆盖的分项 → `covered: false`，它会出现在「覆盖缺口」
+- 补齐之后改成 `true` 并加 `"added": true`，缺口区会转成「本期已全部覆盖」并列出刚封堵的项
+
+三个文件的分工：
+
+| 文件 | 作用 | 加一条的成本 |
+|---|---|---|
+| `watchlist.json` | 只监控，不展示 | 一分钟：名字 + 变化 + 来源 |
+| `prices.json` | 正式卡片，要结论 | 十分钟：还要写 reason / note |
+| `cpi.json` | 查漏基准 | 每月一次，跟统计局发布走 |
 
 ---
 
