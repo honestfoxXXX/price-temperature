@@ -98,9 +98,9 @@ def scene(c):
     img=base();d=ImageDraw.Draw(img)
     if c['scene']=='hook':
         d.text((SAFE,435),'🥚',font=font(135,emoji=True),embedded_color=True)
-        textblock(img,'鸡蛋便宜了？',630,91)
-        textblock(img,'怎么还在涨？',770,91,color=RED)
-        textblock(img,'同一份官方周报，两个答案。',985,35,False,MUTED)
+        textblock(img,'鸡蛋变便宜了',630,91)
+        textblock(img,'怎么还说贵？',770,91,color=RED)
+        textblock(img,'比上周便宜，仍比去年同期贵。',985,35,False,MUTED)
     elif c['scene']=='takeaway':
         textblock(img,'涨跌之前，',510,85)
         textblock(img,'先问：和谁比？',640,79,color=ORANGE)
@@ -182,20 +182,20 @@ def assets():
     for h,tag in [(1440,'3x4'),(1920,'9x16')]:
         img=base().crop((0,0,W,h));d=ImageDraw.Draw(img)
         y=390 if h==1440 else 600
-        textblock(img,'鸡蛋降价了？',y,91)
-        textblock(img,'怎么还在涨？',y+140,88,color=RED)
+        textblock(img,'鸡蛋变便宜了',y,91)
+        textblock(img,'怎么还说贵？',y+140,88,color=RED)
         textblock(img,'比上周 −4.3%',y+355,64,color=GREEN)
-        textblock(img,'比去年 +28.5%',y+465,64,color=RED)
+        textblock(img,'比去年同期 +28.5%',y+465,64,color=RED)
         textblock(img,'统计期 10/12—10/18 · 全国批发',h-120,27,False,MUTED)
         img.convert('RGB').save(OUT/('封面-视频号-'+tag+'.png'))
     cover=Image.new('RGB',(1350,575),'#fff4ea');d=ImageDraw.Draw(cover)
     ico=Image.open(R/'assets/logo-icon-128.png').convert('RGBA').resize((68,68));cover.paste(ico,(100,55),ico)
     d.text((190,65),'今天贵不贵 · 10月25日核验更新',font=font(34,True),fill=INK)
-    d.text((100,205),'鸡蛋降价了？怎么还在涨？',font=fit('鸡蛋降价了？怎么还在涨？',78,1150),fill=INK)
+    d.text((100,205),'鸡蛋变便宜了，怎么还说贵？',font=fit('鸡蛋变便宜了，怎么还说贵？',78,1150),fill=INK)
     d.text((100,355),'比上周 −4.3%  ｜  比去年同期 +28.5%',font=font(46,True),fill=GREEN)
     d.text((100,470),'全国批发周均价 · 第42周（10/12—10/18）',font=font(29),fill=MUTED)
     cover.save(OUT/'封面-公众号.png')
-    article='''# 鸡蛋降价了，怎么还在涨？｜今天贵不贵
+    article='''# 鸡蛋变便宜了，怎么还说贵？｜今天贵不贵
 
 鸡蛋比上周便宜了4.3%，却比去年同期贵28.5%。不是矛盾，是比较的时间不同。
 
@@ -224,7 +224,7 @@ https://honestfoxXXX.github.io/price-temperature/
 7. 未操作视频号/公众号账号，尚未替用户发布。
 
 ## 视频号短标题
-鸡蛋降价了，怎么还在涨？
+鸡蛋变便宜了，怎么还说贵？
 
 ## 视频号描述
 鸡蛋周环比−4.3%，同比却+28.5%。先看和谁比，再判断贵不贵。

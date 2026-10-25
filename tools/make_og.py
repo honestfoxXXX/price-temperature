@@ -62,7 +62,7 @@ def main():
         icon = Image.open(ROOT/'assets/logo-icon-128.png').convert('RGBA').resize((64,64))
         img.paste(icon,(76,60),icon)
         d.text((160,68),meta['title'],font=font(FONT_BOLD,36),fill=INK)
-        d.text((76,205),'鸡蛋降价了，怎么还在涨？',font=font(FONT_BOLD,64),fill=INK)
+        d.text((76,205),'鸡蛋变便宜了，怎么还说贵？',font=font(FONT_BOLD,64),fill=INK)
         d.text((76,320),'周环比 −4.3%  |  同比 +28.5%',font=font(FONT_BOLD,49),fill=GREEN)
         d.text((76,440),'统计期：10/12—10/18 · 全国批发周均价',font=font(FONT_REG,25),fill=INK2)
         d.text((76,510),'核验更新：'+meta['asOf']+' · 对未核实条目暂不下结论',font=font(FONT_REG,23),fill=INK2)

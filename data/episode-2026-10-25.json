@@ -1,6 +1,6 @@
 {
   "date": "2026-10-25",
-  "title": "鸡蛋变便宜了，怎么还在涨？",
+  "title": "鸡蛋变便宜了，怎么还说贵？",
   "voice": "S_Dvf6T9yi2",
   "sourceUrl": "https://www.moa.gov.cn/ztzl/nybrl/rlxx/202610/t20261020_6488764.htm",
   "sourceName": "农业农村部第42周市场动态",
@@ -9,7 +9,7 @@
   "sourcePeriodNote": "10月25日核验更新；最新已核实周报统计至10月18日，不冒充10月25日当周现价。",
   "monthlyCorrectionUrl": "https://www.stats.gov.cn/sj/zxfbhjd/202610/t20261014_1965475.html",
   "boards": [
-    {"title": "鸡蛋：两个方向", "note": "比较基期不同，并不矛盾", "rows": [
+    {"title": "鸡蛋：便宜了，仍比去年贵", "note": "比较基期不同，并不矛盾", "rows": [
       {"name": "比上周", "value": "−4.3%", "icon": "🥚", "basis": "周环比 · 第42周", "direction": "down"},
       {"name": "比去年同期", "value": "+28.5%", "icon": "🥚", "basis": "同比 · 第42周", "direction": "up"}
     ]},
@@ -21,7 +21,7 @@
     ]}
   ],
   "clips": [
-    {"text": "鸡蛋变便宜了，怎么还说涨了？", "caption": "鸡蛋：到底涨了，还是跌了？", "scene": "hook"},
+    {"text": "鸡蛋变便宜了，怎么还说贵？", "caption": "鸡蛋变便宜了，怎么还说贵？", "scene": "hook"},
     {"text": "最新周报，鸡蛋比上周跌百分之四点三。", "caption": "鸡蛋：比上周 −4.3%", "scene": "board", "board": 0, "active": [0]},
     {"text": "但比去年同期，仍然贵百分之二十八点五。", "caption": "比去年同期 +28.5%", "scene": "board", "board": 0, "active": [1]},
     {"text": "同一周，猪肉跌零点六，蔬菜均价跌一点二。", "caption": "猪肉 −0.6%｜蔬菜均价 −1.2%", "scene": "board", "board": 1, "active": [0, 1]},

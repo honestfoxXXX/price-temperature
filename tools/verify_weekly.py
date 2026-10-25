@@ -7,6 +7,14 @@ e=json.loads((R/'data'/('episode-'+day+'.json')).read_text(encoding='utf-8'))
 d=json.loads((R/'data/prices.json').read_text(encoding='utf-8'));c=json.loads((R/'data/cpi.json').read_text(encoding='utf-8'))
 watch=json.loads((R/'data/watchlist.json').read_text(encoding='utf-8'))
 assert d['meta']['asOf']==day
+assert e['title']=='鸡蛋变便宜了，怎么还说贵？'
+assert e['clips'][0]['text']==e['title']
+assert e['clips'][0]['caption']==e['title']
+manifest=json.loads((v/'voice-manifest.json').read_text(encoding='utf-8'))
+assert manifest['clips']==[x['text'] for x in e['clips']]
+assert e['title'] in (out/'公众号文章.md').read_text(encoding='utf-8')
+assert e['title'] in (out/'发布说明.md').read_text(encoding='utf-8')
+assert e['title'] in (v/'字幕.srt').read_text(encoding='utf-8-sig')
 food=[i for cat in d['categories'] for i in cat['items'] if i.get('verified')]
 assert len(food)==8
 assert next(i for i in food if i['id']=='egg')['mom']==-4.3
