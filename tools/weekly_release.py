@@ -54,7 +54,7 @@ def base():
     ico=Image.open(R/'assets/logo-icon-128.png').convert('RGBA').resize((78,78),Image.Resampling.LANCZOS)
     img.alpha_composite(ico,(SAFE,104));d.text((SAFE+98,104),'今天贵不贵',font=font(43,True),fill=INK)
     d.text((SAFE+98,158),'什么该买，什么该等',font=font(24),fill=MUTED)
-    d.text((SAFE,235),'10月25日核验更新 · 第43周内容',font=font(25),fill=MUTED)
+    d.text((SAFE,235),'10月25日更新 · 数据截至 10/18',font=font(25),fill=MUTED)
     return img
 
 def lines(text,maxwidth,f):
@@ -95,27 +95,19 @@ def board_image(b,active):
 
 def scene(c):
     if c['scene']=='board':return board_image(E['boards'][c['board']],c['active'])
-    img=base();d=ImageDraw.Draw(img)
+    img=base()
     if c['scene']=='hook':
-        d.text((SAFE,435),'🥚',font=font(135,emoji=True),embedded_color=True)
-        textblock(img,'鸡蛋变便宜了',630,91)
-        textblock(img,'怎么还说贵？',770,91,color=RED)
-        textblock(img,'比上周便宜，仍比去年同期贵。',985,35,False,MUTED)
-    elif c['scene']=='takeaway':
-        textblock(img,'涨跌之前，',510,85)
-        textblock(img,'先问：和谁比？',640,79,color=ORANGE)
-        textblock(img,'周环比：对比上周\n同比：对比去年同期',880,46)
-        textblock(img,'批发价 ≠ 本地零售价',1150,44,color=RED)
-    elif c['scene']=='correction':
-        textblock(img,'更正上期',400,70,color=RED)
-        textblock(img,'数据存储设备',570,63)
-        textblock(img,'同比 +46.7%',720,78,color=RED)
-        textblock(img,'月环比 +1.7%',865,64)
-        textblock(img,'此前说成“一个月涨46.7%”有误。',1045,33)
-        textblock(img,'统计期：2026年9月\n来源：国家统计局10月14日解读原文',1170,27,False,MUTED)
+        d=ImageDraw.Draw(img)
+        d.text((SAFE,435),c.get('icon','🥬'),font=font(135,emoji=True),embedded_color=True)
+        y=630
+        colors=c.get('colors',[])
+        for i,line in enumerate(c.get('big') or ['这周买菜']):
+            textblock(img,line,y,91,color=colors[i] if i<len(colors) else INK);y+=140
+        if c.get('note'):textblock(img,c['note'],y+18,35,False,MUTED)
     else:
-        textblock(img,'看清涨跌，',520,88)
-        textblock(img,'别被数字带跑。',655,83,color=ORANGE)
+        d=ImageDraw.Draw(img)
+        textblock(img,'该买的趁现在',520,88)
+        textblock(img,'该等的别急。',655,83,color=ORANGE)
         textblock(img,'每周日，更新有出处的数据。',900,40)
         d.rounded_rectangle((SAFE,1065,RIGHT,1180),radius=40,fill=ORANGE)
         d.text(((SAFE+RIGHT)//2,1120),'关注「今天贵不贵」',font=font(48,True),fill='white',anchor='mm')
@@ -178,59 +170,67 @@ def render():
     print('Rendered',outfile,'seconds',round(total,2),flush=True)
 
 def assets():
-    # Cover avoids unverified superlatives and explicitly labels both reference periods.
+    t=E['title']
     for h,tag in [(1440,'3x4'),(1920,'9x16')]:
         img=base().crop((0,0,W,h));d=ImageDraw.Draw(img)
         y=390 if h==1440 else 600
-        textblock(img,'鸡蛋变便宜了',y,91)
-        textblock(img,'怎么还说贵？',y+140,88,color=RED)
-        textblock(img,'比上周 −4.3%',y+355,64,color=GREEN)
-        textblock(img,'比去年同期 +28.5%',y+465,64,color=RED)
-        textblock(img,'统计期 10/12—10/18 · 全国批发',h-120,27,False,MUTED)
+        textblock(img,'这周多买',y,91)
+        textblock(img,'这三样菜',y+140,95,color=GREEN)
+        textblock(img,'青椒 −6.6%',y+340,58,color=GREEN)
+        textblock(img,'大白菜 −6.1%',y+432,58,color=GREEN)
+        textblock(img,'平菇 −5.8%',y+524,58,color=GREEN)
+        textblock(img,'牛肉同比 +11.2%，先别急',h-120,27,False,MUTED)
         img.convert('RGB').save(OUT/('封面-视频号-'+tag+'.png'))
     cover=Image.new('RGB',(1350,575),'#fff4ea');d=ImageDraw.Draw(cover)
     ico=Image.open(R/'assets/logo-icon-128.png').convert('RGBA').resize((68,68));cover.paste(ico,(100,55),ico)
-    d.text((190,65),'今天贵不贵 · 10月25日核验更新',font=font(34,True),fill=INK)
-    d.text((100,205),'鸡蛋变便宜了，怎么还说贵？',font=fit('鸡蛋变便宜了，怎么还说贵？',78,1150),fill=INK)
-    d.text((100,355),'比上周 −4.3%  ｜  比去年同期 +28.5%',font=font(46,True),fill=GREEN)
-    d.text((100,470),'全国批发周均价 · 第42周（10/12—10/18）',font=font(29),fill=MUTED)
+    d.text((190,65),'今天贵不贵 · 10月25日更新',font=font(34,True),fill=INK)
+    d.text((100,205),t,font=fit(t,72,1150),fill=INK)
+    d.text((100,345),'青椒 −6.6%　大白菜 −6.1%　平菇 −5.8%',font=font(40,True),fill=GREEN)
+    d.text((100,435),'猪肉同比 −12.6%，牛肉 +11.2%',font=font(36,True),fill=RED)
+    d.text((100,500),'全国批发周均价 · 第42周（10/12—10/18）',font=font(26),fill=MUTED)
     cover.save(OUT/'封面-公众号.png')
-    article='''# 鸡蛋变便宜了，怎么还说贵？｜今天贵不贵
+    article='''# 这周多买这三样菜，牛肉先别急｜今天贵不贵
 
-鸡蛋比上周便宜了4.3%，却比去年同期贵28.5%。不是矛盾，是比较的时间不同。
+这周三样菜比上周便宜了5%以上：**青椒 −6.6%、大白菜 −6.1%、平菇 −5.8%**。
+
+肉这边反过来：猪肉比去年同期便宜12.6%，七块九一斤；牛肉贵了11.2%，三十六块七一斤。一斤牛肉的钱，差不多能买四斤半猪肉。
+
+水果开始反季，西瓜一周涨了4.8%。
 
 【在公众号编辑器中插入本期视频号视频】
 
 【在这里上传本期「长图.jpg」】
 
-本期依据农业农村部第42周周报，统计期为**10月12—18日**，10月19日发布。以上是全国批发周均价变化，不等于本地零售价。
+以上是农业农村部第42周全国**批发**周均价，统计期10月12—18日，10月19日发布。批发价不等于你家菜场价，但涨跌方向可以参考。
 
 **更正上期：**存储设备上涨46.7%、平板电脑上涨23.6%，均是9月同比，不是月环比。对应月环比为1.7%、1.5%。此前表述有误，已在网站更正。
 
 完整数据：
 https://honestfoxXXX.github.io/price-temperature/
 
-每周日更新。什么该买，什么该等，先看有出处的数据。
+每周日更新。什么该买，什么该等。
 '''
     (OUT/'公众号文章.md').write_text(article,encoding='utf-8')
-    (OUT/'发布说明.md').write_text('''# 本期发布说明
+    (OUT/'发布说明.md').write_text('# 本期发布说明 · '+t+'''
 
 1. 先发布视频号，再在公众号编辑器插入对应视频。
 2. 视频号封面用3x4版，公众号封面用横版。
-3. 公众号正文仅视频、长图、地址及简短统计口径/更正说明。
+3. 公众号正文：三样便宜菜 → 肉价对比 → 水果 → 统计口径 → 更正 → 地址。
 4. 网站“阅读原文”填 https://honestfoxXXX.github.io/price-temperature/ 。
 5. 按发布平台实际选项声明AI复刻配音/AI配乐；不承诺标注对推荐量的影响。
 6. 本期数据截至10月18日，更新日为10月25日；不是第43周行情。
 7. 未操作视频号/公众号账号，尚未替用户发布。
 
 ## 视频号短标题
-鸡蛋变便宜了，怎么还说贵？
+这周多买这三样菜
 
 ## 视频号描述
-鸡蛋周环比−4.3%，同比却+28.5%。先看和谁比，再判断贵不贵。
+青椒−6.6%、大白菜−6.1%、平菇−5.8%，这周三样菜最便宜。
+猪肉同比−12.6%、七块九一斤；牛肉同比+11.2%、三十六块七一斤。
+一斤牛肉的钱，差不多四斤半猪肉。
+西瓜一周+4.8%，反季了。
 数据：农业农村部第42周，10/12—10/18，全国批发周均价。
-更正上期：存储+46.7%是同比，月环比为+1.7%。
-#物价 #菜价 #生活成本
+#菜价 #物价 #生活成本 #今天吃什么
 ''',encoding='utf-8')
     print('Covers and simple article ready')
 
