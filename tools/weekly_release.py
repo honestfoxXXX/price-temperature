@@ -38,7 +38,7 @@ def voice():
         if not wav.exists():ff(['-i',str(mp),'-ar',str(SR),'-ac','1',str(wav)])
         raw.append((wav,len(readwav(wav))/SR))
         print('Voice',i+1,round(raw[-1][1],2),flush=True)
-    dur=sum(x[1] for x in raw); ratio=max(1.,dur/25.)
+    dur=sum(x[1] for x in raw); ratio=max(1.,dur/float(E.get('voiceTargetSeconds',25.)))
     if ratio>1.65:raise RuntimeError('Narration too long: shorten text rather than excessive speed-up')
     for i,(p,d) in enumerate(raw):
         target=cache/('clip-%02d.wav'%i)
@@ -172,7 +172,7 @@ def render():
         proc.stdin.write(img.convert('RGB').tobytes())
     proc.stdin.close();rc=proc.wait()
     if rc:raise RuntimeError('Encoder failed '+str(rc))
-    for i in [0,1,3,6,7]:
+    for i in sorted({0,1,3,len(E['clips'])-1}):
         im=frames[i].copy();subtitle(im,E['clips'][i]['caption']);im.convert('RGB').save(V/('预览-%02d.png'%i))
     (V/'timing.json').write_text(json.dumps({'duration':total,'starts':starts,'safeMarginPixels':SAFE,'voice':E['voice'],'sources':[E['sourceUrl'],E['monthlyCorrectionUrl']]},ensure_ascii=False,indent=2),encoding='utf-8')
     print('Rendered',outfile,'seconds',round(total,2),flush=True)
@@ -205,7 +205,7 @@ def assets():
 
 本期依据农业农村部第42周周报，统计期为**10月12—18日**，10月19日发布。以上是全国批发周均价变化，不等于本地零售价。
 
-**更正上期：**存储设备上涨46.7%、平板电脑上涨23.6%，均是9月同比，不是月环比。对应月环比为1.7%、1.5%。此前表述有误，网站与本期视频已更正。
+**更正上期：**存储设备上涨46.7%、平板电脑上涨23.6%，均是9月同比，不是月环比。对应月环比为1.7%、1.5%。此前表述有误，已在网站更正。
 
 完整数据：
 https://honestfoxXXX.github.io/price-temperature/

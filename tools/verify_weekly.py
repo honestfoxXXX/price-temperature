@@ -10,6 +10,7 @@ assert d['meta']['asOf']==day
 assert e['title']=='鸡蛋变便宜了，怎么还说贵？'
 assert e['clips'][0]['text']==e['title']
 assert e['clips'][0]['caption']==e['title']
+assert not any(x['scene']=='correction' or '更正上期' in x['text'] for x in e['clips'])
 manifest=json.loads((v/'voice-manifest.json').read_text(encoding='utf-8'))
 assert manifest['clips']==[x['text'] for x in e['clips']]
 assert e['title'] in (out/'公众号文章.md').read_text(encoding='utf-8')

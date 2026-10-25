@@ -2,6 +2,7 @@
   "date": "2026-10-25",
   "title": "鸡蛋变便宜了，怎么还说贵？",
   "voice": "S_Dvf6T9yi2",
+  "voiceTargetSeconds": 21.3,
   "sourceUrl": "https://www.moa.gov.cn/ztzl/nybrl/rlxx/202610/t20261020_6488764.htm",
   "sourceName": "农业农村部第42周市场动态",
   "sourcePublished": "2026-10-19",
@@ -27,7 +28,6 @@
     {"text": "同一周，猪肉跌零点六，蔬菜均价跌一点二。", "caption": "猪肉 −0.6%｜蔬菜均价 −1.2%", "scene": "board", "board": 1, "active": [0, 1]},
     {"text": "牛肉涨零点七，水果均价涨零点八。", "caption": "牛肉 +0.7%｜水果均价 +0.8%", "scene": "board", "board": 1, "active": [2, 3]},
     {"text": "所以，涨跌先看和谁比。批发价，也不等于你家菜场价。", "caption": "先看基期｜批发价≠零售价", "scene": "takeaway"},
-    {"text": "更正上期：存储涨四成七是同比，不是一个月。", "caption": "更正：46.7%是同比，不是月涨幅", "scene": "correction"},
     {"text": "关注我，每周日更新。", "caption": "什么该买，什么该等", "scene": "end"}
   ]
 }
