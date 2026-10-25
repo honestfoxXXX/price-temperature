@@ -29,7 +29,7 @@ WIDTH = 750           # 公众号按 750 显示，1:1 取图，避免缩放糊�
 MAX_H = 20000
 
 # 这两块是给网站维护看的，长图里是噪音
-HIDE = "<style>.h-src,.h-log,.src,.log{display:none!important}</style>"
+HIDE = "<style>.h-src,.h-log,.src,.log,.card.calm,.section:not(:has(.card:not(.calm))){display:none!important}</style>"
 
 PROBE = """
 <script>
@@ -48,7 +48,8 @@ def file_url(p):
 
 def prepare(html_path, with_probe):
     src = html_path.read_text(encoding="utf-8")
-    src = src.replace("</head>", HIDE + "</head>", 1)
+    base = ROOT.as_uri() + "/"
+    src = src.replace("</head>", '<base href="' + base + '">' + HIDE + "</head>", 1)
     if with_probe:
         src = src.replace("</body>", PROBE, 1)
     tmp = pathlib.Path(tempfile.gettempdir()) / (
@@ -92,7 +93,7 @@ def main():
         print("[x] 没有 index.html，先跑 python tools/build.py")
         return 1
 
-    day = datetime.date.today().isoformat()
+    day = sys.argv[1] if len(sys.argv) > 1 else datetime.date.today().isoformat()
     outdir = ROOT / "output" / day
     outdir.mkdir(parents=True, exist_ok=True)
 

@@ -14,6 +14,7 @@ function makeEl(id) {
   return {
     id, innerHTML: '', textContent: '', value: '', className: '', hidden: true, style: {},
     listeners: {},
+    insertAdjacentHTML(where, html) { this.innerHTML += html; },
     addEventListener(t, fn) { (this.listeners[t] = this.listeners[t] || []).push(fn); },
     getAttribute() { return null; }, setAttribute() {}, hasAttribute() { return false; },
     querySelectorAll() { return []; }, querySelector() { return makeEl('q'); },
@@ -72,6 +73,20 @@ const checks = [
   ['无未替换占位符', !html.includes('__PRICE_DATA__'), ''],
   ['无 undefined/null 泄漏', !/<b[^>]*>(undefined|null)</.test(list) && !/>(undefined|null)</.test(act), ''],
 ];
+
+if (D.meta.auditMode) {
+  const checked = D.categories.flatMap(c=>c.items).filter(x=>x.verified);
+  checks.push(['本期仅8项已核实报价', checked.length===8, `${checked.length}`]);
+  checks.push(['更正信息可见', (store.lede.innerHTML||'').includes('同比+46.7%'), '']);
+  checks.push(['未核实卡片隐藏旧价', count(list,/暂不展示旧报价/g)===total-checked.length, '']);
+  const storage=D.watch.find(x=>x.name==='数据存储设备');
+  checks.push(['存储同比与月环比未混淆', storage.yoy===46.7&&storage.mom===1.7, '']);
+  const click=store.list.listeners.click[0];
+  click({target:{closest(){return {getAttribute(){return 'down'}}}}});
+  checks.push(['待核验弹层不显示历史报价', store['m-price'].innerHTML.includes('待核验')&&!store['m-price'].innerHTML.includes('899'), '']);
+  click({target:{closest(){return {getAttribute(){return 'egg'}}}}});
+  checks.push(['鸡蛋弹层显示周环比与统计期', store['m-ref'].textContent.includes('周环比')&&store['m-spec'].textContent.includes('2026-10-12'), '']);
+}
 
 let bad = 0;
 for (const [name, ok, info] of checks) {

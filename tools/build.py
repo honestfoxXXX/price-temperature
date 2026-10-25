@@ -110,7 +110,7 @@ def main():
                         errors.append("history.%s 日期格式应为 YYYY-MM：%r" % (iid, d))
                     if not isinstance(v, (int, float)):
                         errors.append("history.%s 数值非法：%r" % (iid, v))
-            data["history"] = series
+            data["history"] = {} if meta.get("auditMode") else series
     else:
         print("  [!] 没有 history.json，卡片不会画走势；先跑 python tools/seed_history.py")
 
@@ -175,10 +175,12 @@ def main():
 
     print("[ok] 生成 %s" % OUT)
     print("     %d 个品类 / %d 个条目 / %.1f KB" % (len(cats), total, size))
-    print("     结论：现在买划算 %d · 再忍忍 %d · 价格平稳 %d · 躲不掉 %d"
-          % (vc["buy"], vc["wait"], vc["neutral"], vc["must"]))
-    print("     口径：官方 %d · 媒体 %d · 估算 %d" % (qc["官方"], qc["媒体"], qc["估算"]))
-    if hist:
+    if meta.get("auditMode"):
+        checked = sum(bool(it.get("verified")) for c in cats for it in c["items"])
+        print("     本期已核实 %d 项 / 历史资料待核验 %d 项；不展示未核实报价和历史分位" % (checked, total-checked))
+    else:
+        print("     原结论：%r；口径：%r" % (dict(vc), dict(qc)))
+    if hist and not meta.get("auditMode"):
         n = len((hist.get("series") or {}))
         pts = sum(len(v) for v in (hist.get("series") or {}).values())
         print("     走势：%d 条有曲线，共 %d 个价格点" % (n, pts))

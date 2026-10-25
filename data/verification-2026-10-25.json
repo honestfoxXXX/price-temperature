@@ -1,0 +1,28 @@
+{
+  "verifiedAt": "2026-10-25",
+  "sources": [
+    "https://www.moa.gov.cn/ztzl/nybrl/rlxx/202610/t20261020_6488764.htm",
+    "https://www.stats.gov.cn/sj/zxfbhjd/202610/t20261014_1965475.html"
+  ],
+  "weeklyPeriod": "2026-10-12—2026-10-18",
+  "weeklyPublishedAt": "2026-10-19",
+  "monthlyPeriod": "2026-09",
+  "corrections": "更正：上期“存储设备一个月涨46.7%”表述有误。国家统计局9月原文为同比+46.7%、环比+1.7%；平板电脑同比+23.6%、环比+1.5%。对无充分证据的五年分位、四年涨价推导和绝对化购买建议，本期停止展示。",
+  "verifiedPriceItems": [
+    "pork",
+    "beef",
+    "lamb",
+    "chicken",
+    "egg",
+    "veg",
+    "fruit",
+    "fish"
+  ],
+  "pendingLegacyItems": 62,
+  "notClaimed": [
+    "未找到第43周可核实原文",
+    "不把9月月报当成10月周度",
+    "无可核对4年序列，不宣称官方价+4年涨幅结论",
+    "不将反推锚点认作真实逐月观测"
+  ]
+}

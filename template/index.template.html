@@ -398,10 +398,9 @@
       <input id="q" type="search" placeholder="搜条目，如「猪肉」「内存」" aria-label="搜索条目">
       <select id="sort" aria-label="排序方式">
         <option value="cat">按品类</option>
-        <option value="verdict">按结论</option>
-        <option value="cheap">位置从低到高</option>
-        <option value="rise">涨幅最大</option>
-        <option value="fall">跌幅最大</option>
+        <option value="verdict">已核实优先</option>
+        <option value="rise">已核实周涨幅</option>
+        <option value="fall">已核实周跌幅</option>
       </select>
     </div>
   </div>
@@ -571,7 +570,7 @@
     if (typeof it.price !== 'number'){
       var hm = it.mom !== null && it.mom !== undefined;
       return {text: (hm ? pct(it.mom) : pct(it.yoy)) || '—', tiny: false,
-              unit: hm ? '环比' : '同比', alt: ''};
+              unit: hm ? (it.changeBasis||'环比') : '同比', alt: ''};
     }
     var v = view(it);
     if (v.factor === 1) return {text: fmt(it.price), tiny: false, unit: it.unit || '', alt: ''};
@@ -653,12 +652,13 @@
   document.getElementById('headline').innerHTML = M.headline;
   document.getElementById('lede').textContent = M.lede;
   document.getElementById('readme').textContent = M.readme;
+  if(M.auditNote){document.getElementById('lede').insertAdjacentHTML('afterend','<p style="padding:16px;background:#fff0db;border-radius:12px;font-size:13px;line-height:1.8">'+esc(M.auditNote)+'</p>');}
 
   /* ---------- action ---------- */
   var ACT = [
-    {key:'buy',  title:'现在买划算', cls:'buy'},
-    {key:'wait', title:'再忍忍',     cls:'wait'},
-    {key:'must', title:'躲不掉',     cls:'must'}
+    {key:'buy',  title:'已核实周度变化', cls:'buy'},
+    {key:'wait', title:'同周上涨',     cls:'wait'},
+    {key:'must', title:'暂缓结论',     cls:'must'}
   ];
   document.getElementById('act').innerHTML = ACT.map(function(col){
     var rows = ((M.action && M.action[col.key]) || []).map(function(a){
@@ -677,7 +677,7 @@
   function renderIndex(){
     tempEl.innerHTML = D.categories.map(function(c){
       var list = items.filter(function(i){ return i.catId === c.id; });
-      var lv = level(avgPct(list));
+      var lv = {cls:'lvl-mid',lbl:list.some(function(x){return x.verified;})?'有已核实数据':'待核验'};
       return '<button class="idx" data-cat="' + c.id + '" aria-pressed="' +
         (activeCat === c.id ? 'true' : 'false') + '">' +
         '<span class="ic">' + c.icon + '</span>' +
@@ -706,28 +706,12 @@
 
   /* ---------- card ---------- */
   function cardHTML(it){
-    var v = V[it.verdict] || V.neutral;
-    var p = priceMain(it);
-    var d = diffOf(it);
-    var momTxt = pct(it.mom);
-    var line = d
-      ? '<span class="' + d.cls + '">' + d.text + '</span>'
-      : '<span class="flat">同比 ' + (pct(it.yoy) || '—') + '</span>';
-    return '<article class="card' + (it.verdict === 'neutral' ? ' calm' : '') + '" role="button" tabindex="0" data-id="' + it.id + '" aria-label="' + esc(it.name) + '，查看详情">' +
-      '<div class="in">' +
-        '<div class="head">' +
-          '<span class="ic">' + it.icon + '</span>' +
-          '<span class="tt"><span class="name">' + esc(it.name) + '</span>' +
-            '<span class="spec">' + esc(it.spec) + '</span></span>' +
-          '<span class="pill ' + v.cls + '">' + v.label + '</span>' +
-        '</div>' +
-        '<div class="p"><b class="num' + (p.tiny ? ' tiny' : '') + '">' + p.text + '</b>' +
-          (p.tiny ? '' : '<i>' + esc(p.unit) + '</i>') +
-          (p.alt ? '<em class="alt">' + p.alt + '</em>' : '') + '</div>' +
-        '<div class="d">' + line + (momTxt ? '<span class="mom">环比 ' + momTxt + '</span>' : '') + '</div>' +
-      '</div>' +
-      sparkSVG(it) +
-    '</article>';
+    var p = priceMain(it), known = !!it.verified;
+    return '<article class="card'+(known?'':' calm')+'" role="button" tabindex="0" data-id="'+it.id+'"><div class="in">'+
+      '<div class="head"><span class="ic">'+it.icon+'</span><span class="tt"><span class="name">'+esc(it.name)+'</span><span class="spec">'+esc(known?it.spec:'保留目录 · 历史资料待核验')+'</span></span><span class="pill neutral">'+(known?'已核实':'待核验')+'</span></div>'+
+      '<div class="p"><b class="num">'+(known?p.text:'待核验')+'</b><i>'+(known?esc(p.unit):'')+'</i>'+(known&&p.alt?'<em class="alt">'+p.alt+'</em>':'')+'</div>'+
+      '<div class="d"><span>'+(known?'周环比 '+(pct(it.mom)||'—')+' · 同比 '+(pct(it.yoy)||'未给出'):'暂不展示旧报价、五年分位和购买建议')+'</span></div>'+
+      '<p style="font-size:10px;color:#947a67">'+(known?'10/12—10/18 · 批发周均价':'本期未取得可追溯证据，不能视为2026-10-25现价')+'</p></div></article>';
   }
 
   /* ---------- render ---------- */
@@ -742,15 +726,15 @@
   function sortList(list, mode){
     return list.sort(function(a, b){
       if (mode === 'rise'){
-        var ya = yearChange(a), yb = yearChange(b);
+        var ya = a.verified?a.mom:null, yb = b.verified?b.mom:null;
         return (yb === null ? -Infinity : yb) - (ya === null ? -Infinity : ya);
       }
       if (mode === 'fall'){
-        var fa = yearChange(a), fb = yearChange(b);
+        var fa = a.verified?a.mom:null, fb = b.verified?b.mom:null;
         return (fa === null ? Infinity : fa) - (fb === null ? Infinity : fb);
       }
       if (mode === 'cheap') return a.pct5 - b.pct5;
-      if (mode === 'verdict') return VORDER[a.verdict] - VORDER[b.verdict] || a.pct5 - b.pct5;
+      if (mode === 'verdict') return Number(!!b.verified) - Number(!!a.verified) || a._i-b._i;
       return a._i - b._i;
     });
   }
@@ -773,7 +757,7 @@
       if (!its.length) return;
       var ordered = its.filter(function(i){ return i.verdict !== 'neutral'; })
                        .concat(its.filter(function(i){ return i.verdict === 'neutral'; }));
-      var lv = level(avgPct(its));
+      var lv = {cls:'lvl-mid',lbl:its.some(function(x){return x.verified;})?'已核实 / 待核验':'待核验'};
       var no = String(D.categories.indexOf(c) + 1);
       html += '<section class="section">' +
         '<header class="sec-head">' +
@@ -796,20 +780,20 @@
     var it = byId[id];
     if (!it) return;
     lastFocus = document.activeElement;
-    var v = V[it.verdict] || V.neutral;
-    var p = priceMain(it);
-    var d = diffOf(it);
+    var v = {label:it.verified?'已核实批发数据':it.watch?'已核实监控信号':'待核验',cls:'neutral'};
+    var p = (!it.verified && !it.watch)?{text:'待核验',unit:'',alt:''}:priceMain(it);
+    var d = null;
 
     document.getElementById('m-icon').textContent = it.icon;
     document.getElementById('m-title').textContent = it.name;
-    document.getElementById('m-spec').textContent = it.catName + ' · ' + it.spec;
+    document.getElementById('m-spec').textContent = it.catName + ' · ' + (it.period || it.spec || '历史资料待核验');
     document.getElementById('m-price').innerHTML =
       '<b class="num">' + p.text + '</b>' + (p.unit ? '<i>' + esc(p.unit) + '</i>' : '') +
       (p.alt ? '<em class="alt">' + p.alt + '</em>' : '');
     document.getElementById('m-delta').className = 'd ' + (d ? d.cls : 'flat');
-    document.getElementById('m-delta').textContent = d ? d.text : '同比 ' + (pct(it.yoy) || '—');
+    document.getElementById('m-delta').textContent = d ? d.text : it.verified||it.watch?'同比 ' + (pct(it.yoy) || '未给出'):'未核验，不下结论';
     document.getElementById('m-ref').textContent =
-      (d ? '对照 ' + d.ref : '') + (it.mom !== null && it.mom !== undefined ? '　环比 ' + pct(it.mom) : '');
+      (d ? '对照 ' + d.ref : '') + ((it.verified||it.watch) && it.mom !== null && it.mom !== undefined ? '　'+(it.changeBasis||'环比')+' '+pct(it.mom) : '');
 
     var ch = document.getElementById('m-chart');
     var svg = sparkSVG(it, {h:76});
@@ -825,15 +809,15 @@
 
     var vb = document.getElementById('m-verdict');
     vb.className = 'verdict ' + v.cls;
-    vb.innerHTML = '<strong>' + v.label + '</strong>' + esc(it.reason);
+    vb.innerHTML = '<strong>' + v.label + '</strong>' + esc(it.verified||it.watch?it.reason:'历史条目尚未复核，旧结论已暂停。');
 
-    document.getElementById('m-note').textContent = it.note || '';
+    document.getElementById('m-note').textContent = it.verified||it.watch?(it.note||''):'旧报价、涨跌与分位暂无可核查证据，不作为本期现价或购买建议。';
     document.getElementById('m-meta').innerHTML =
       '<div><dt>数据来源</dt><dd>' + esc(it.source) + '</dd></div>' +
       '<div><dt>口径</dt><dd><span class="qt qt-' + it.quality + '">' + it.quality + '</span></dd></div>' +
       '<div><dt>数据时点</dt><dd class="num">' + it.asOf + '</dd></div>' +
       '<div><dt>近五年位置</dt><dd class="num">' +
-        (typeof it.pct5 === 'number' ? it.pct5 + ' · ' + level(it.pct5).lbl : '未采集') + '</dd></div>';
+        '暂无可复核完整序列，不作分位判断' + '</dd></div>';
 
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -907,9 +891,8 @@
   var qc = {'官方':0, '媒体':0, '估算':0};
   items.forEach(function(i){ if (qc[i.quality] !== undefined) qc[i.quality]++; });
   document.getElementById('composition').innerHTML =
-    '<span><em>' + qc['官方'] + '</em> 条官方口径</span>' +
-    '<span><em>' + qc['媒体'] + '</em> 条媒体报道</span>' +
-    '<span><em>' + qc['估算'] + '</em> 条市场估算</span>';
+    '<span><em>'+items.filter(function(x){return x.verified;}).length+'</em> 项本期已核实</span>'+
+    '<span><em>'+items.filter(function(x){return !x.verified;}).length+'</em> 项历史资料待核验</span>';
 
   document.getElementById('sources').innerHTML = D.sources.map(function(s, i){
     return '<li><span>' + (i < 9 ? '0' : '') + (i + 1) + '</span>' +
@@ -933,7 +916,7 @@
     pool.sort(function(a, b){ return Math.abs(b.val) - Math.abs(a.val); });
     var out = pool.slice(0, 10);
     var sub = document.getElementById('radar-sub');
-    if (sub) sub.textContent = '监控池 ' + (D.watch || []).length + ' 条里，本周变化最大的';
+    if (sub) sub.textContent = '已核实信号；周度与月度口径分别标注，非统一周榜';
     if (!out.length){ box.hidden = true; return; }
     box.hidden = false;
     document.getElementById('radar-list').innerHTML = out.map(function(x){
@@ -942,7 +925,7 @@
         '<span class="ic">' + (it.icon || it.catIcon || '·') + '</span>' +
         '<b>' + esc(it.name) + '</b>' +
         '<span class="chg ' + (x.val > 0 ? 'up' : 'down') + '">' +
-          (pct(x.val) || '—') + '</span></li>';
+          (x.kind==='yoy'?'同比 ':(it.changeBasis||'环比')+' ')+(pct(x.val)||'—')+' · '+esc(it.period||'')+'</span></li>';
     }).join('');
   }
 
@@ -960,7 +943,7 @@
       var v = (it.mom !== null && it.mom !== undefined) ? it.mom : it.yoy;
       return '<li><span class="nm">' + esc(it.name) + '</span>' +
              '<span class="chg ' + (v > 0 ? 'up' : v < 0 ? 'down' : 'flat') + '">' +
-             (pct(v) || '—') + '</span></li>';
+             ((it.mom!==null&&it.mom!==undefined)?(it.changeBasis||'环比'):'同比')+' '+(pct(v)||'—')+'</span></li>';
     }).join('');
   }
 
@@ -978,17 +961,17 @@
 
     box.hidden = false;
     if (!gaps.length){
-      tag.textContent = '本期已全部覆盖';
+      tag.textContent = '已选分项有对应监控';
       tag.className = 'sec-pos lvl-cold';
       document.getElementById('gaps-note').textContent =
-        head + '本期 CPI 分项里没有未覆盖的品类，之前识别出的 ' + closed.length + ' 个缺口都已转入监控池。';
+        head+'本表仅检查已选分项，不代表全部品类已覆盖；9月数据不是本周数据。';
       document.getElementById('gap-list').innerHTML = closed.map(function(r){
         var isMom = (r.yoy === null || r.yoy === undefined);
         var v = isMom ? r.mom : r.yoy;
         return '<li><b>' + esc(r.name) + '</b>' +
                '<span class="why">' + esc(r.why || '') + '</span>' +
                '<span class="chg ' + (v > 0 ? 'up' : 'down') + '">' +
-               (isMom ? '环比 ' : '同比 ') + (pct(v) || '—') + '</span></li>';
+               (isMom ? '月环比 ' : '同比 ') + (pct(v)||'—')+'</span></li>';
       }).join('');
       return;
     }
@@ -1003,7 +986,7 @@
       return '<li><b>' + esc(r.name) + '</b>' +
              '<span class="why">' + esc(r.why || '') + '</span>' +
              '<span class="chg ' + (v > 0 ? 'up' : 'down') + '">' +
-             (isMom ? '环比 ' : '同比 ') + (pct(v) || '—') + '</span></li>';
+             (isMom ? '月环比 ' : '同比 ') + (pct(v)||'—')+'</span></li>';
     }).join('');
   }
 

@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-25",
+  "title": "鸡蛋变便宜了，怎么还在涨？",
+  "voice": "S_Dvf6T9yi2",
+  "sourceUrl": "https://www.moa.gov.cn/ztzl/nybrl/rlxx/202610/t20261020_6488764.htm",
+  "sourceName": "农业农村部第42周市场动态",
+  "sourcePublished": "2026-10-19",
+  "period": "10月12—18日 · 全国批发周均价",
+  "sourcePeriodNote": "10月25日核验更新；最新已核实周报统计至10月18日，不冒充10月25日当周现价。",
+  "monthlyCorrectionUrl": "https://www.stats.gov.cn/sj/zxfbhjd/202610/t20261014_1965475.html",
+  "boards": [
+    {"title": "鸡蛋：两个方向", "note": "比较基期不同，并不矛盾", "rows": [
+      {"name": "比上周", "value": "−4.3%", "icon": "🥚", "basis": "周环比 · 第42周", "direction": "down"},
+      {"name": "比去年同期", "value": "+28.5%", "icon": "🥚", "basis": "同比 · 第42周", "direction": "up"}
+    ]},
+    {"title": "这一周，哪些在动", "note": "所有数字均为同一报告的周环比", "rows": [
+      {"name": "猪肉", "value": "−0.6%", "icon": "🥩", "basis": "全国批发周均价", "direction": "down"},
+      {"name": "28种蔬菜均价", "value": "−1.2%", "icon": "🥬", "basis": "不是每一种蔬菜都在跌", "direction": "down"},
+      {"name": "牛肉", "value": "+0.7%", "icon": "🐄", "basis": "全国批发周均价", "direction": "up"},
+      {"name": "6种水果均价", "value": "+0.8%", "icon": "🍎", "basis": "不是每一种水果都在涨", "direction": "up"}
+    ]}
+  ],
+  "clips": [
+    {"text": "鸡蛋变便宜了，怎么还说涨了？", "caption": "鸡蛋：到底涨了，还是跌了？", "scene": "hook"},
+    {"text": "最新周报，鸡蛋比上周跌百分之四点三。", "caption": "鸡蛋：比上周 −4.3%", "scene": "board", "board": 0, "active": [0]},
+    {"text": "但比去年同期，仍然贵百分之二十八点五。", "caption": "比去年同期 +28.5%", "scene": "board", "board": 0, "active": [1]},
+    {"text": "同一周，猪肉跌零点六，蔬菜均价跌一点二。", "caption": "猪肉 −0.6%｜蔬菜均价 −1.2%", "scene": "board", "board": 1, "active": [0, 1]},
+    {"text": "牛肉涨零点七，水果均价涨零点八。", "caption": "牛肉 +0.7%｜水果均价 +0.8%", "scene": "board", "board": 1, "active": [2, 3]},
+    {"text": "所以，涨跌先看和谁比。批发价，也不等于你家菜场价。", "caption": "先看基期｜批发价≠零售价", "scene": "takeaway"},
+    {"text": "更正上期：存储涨四成七是同比，不是一个月。", "caption": "更正：46.7%是同比，不是月涨幅", "scene": "correction"},
+    {"text": "关注我，每周日更新。", "caption": "什么该买，什么该等", "scene": "end"}
+  ]
+}

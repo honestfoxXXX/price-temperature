@@ -61,8 +61,8 @@ def synth(text, speaker, key):
         "req_params": {
             "text": text,
             "speaker": speaker,
-            "audio_params": {"format": "mp3", "sample_rate": 24000},
-            "speech_rate": SPEECH_RATE,
+            "audio_params": {"format": "mp3", "sample_rate": 24000,
+                             "speech_rate": SPEECH_RATE},
         },
     }
     headers = {

@@ -2,27 +2,28 @@
   "meta": {
     "period": "2026 年 9 月",
     "source": "国家统计局 2026-10-14",
-    "url": "https://www.jxxf.gov.cn/xfxxxgk/tjixxx/202610/7f31fe6412ba475d9f9f555d333d537a.shtml",
+    "url": "https://www.stats.gov.cn/sj/zxfbhjd/202610/t20261014_1965475.html",
     "headline": {
       "yoy": 0.9,
       "mom": 0.2
     },
-    "note": "用统计局的分项排名反查覆盖缺口：covered=false 的就是「官方显示在动、但我们还没跟」的品类。"
+    "note": "仅核对本表选取的CPI分项，并非穷尽全部消费品类。",
+    "verifiedAt": "2026-10-25"
   },
   "rows": [
     {
       "name": "数据存储设备",
-      "yoy": null,
-      "mom": 46.7,
+      "yoy": 46.7,
+      "mom": 1.7,
       "covered": true,
       "why": "内存、SSD 已在监控"
     },
     {
       "name": "平板电脑",
-      "yoy": null,
-      "mom": 23.6,
+      "yoy": 23.6,
+      "mom": 1.5,
       "covered": true,
-      "why": "存储涨价传导到整机",
+      "why": "9月CPI分类指数；非具体品牌报价",
       "added": true,
       "addedAt": "2026-10-18"
     },
@@ -53,10 +54,10 @@
     },
     {
       "name": "计算机",
-      "yoy": null,
-      "mom": 3.7,
+      "yoy": 21.8,
+      "mom": 2.0,
       "covered": true,
-      "why": "整机跟随存储成本",
+      "why": "同比与月环比分列；并非本周涨幅",
       "added": true,
       "addedAt": "2026-10-18"
     },
