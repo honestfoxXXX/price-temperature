@@ -90,7 +90,7 @@ def board_image(b,active):
         bf=fit(row['basis'],23,RIGHT-SAFE-130,False)
         d.text((SAFE+94,y+103),row['basis'],font=bf,fill=MUTED)
     y=1416
-    for line in E.get('boardFooter',[]):
+    for line in (b.get('footer') or E.get('boardFooter',[])):
         textblock(img,line,y,25 if y==1416 else 23,False,MUTED);y+=44
     return img
 
@@ -199,7 +199,7 @@ def assets():
         '- **批发金饰 1010 元**（北京水贝，10月26日）\n'
         '- **品牌店约 1200 元**（老庙黄金当日报价）\n\n'
         '中间的差价是工费和品牌溢价，不是金价本身。买的时候先问克价，再问工费。\n\n'
-        '铂金跌得更狠：从最高 700 元/克跌到 395 元，接近腰斩。\n\n'
+        '铂金跌得更狠：从最高 700 元/克跌到 395 元，接近腰斩。\n\n''**把范围放大到八大类**（9月CPI同比，六类涨两类跌）：其他用品及服务 +5.9%、交通通信 +4.3% 领涨；食品烟酒 −0.9%、居住 −0.3% 还在跌。\n\n'
         '【在公众号编辑器中插入本期视频号视频】\n\n'
         '【在这里上传本期「长图.jpg」】\n\n'
         '数据来源：中国证券报（经济网转载）10月27日、上海黄金交易所10月30日行情。'

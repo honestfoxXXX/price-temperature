@@ -2,13 +2,18 @@
   "date": "2026-11-01",
   "title": "金饰克价，从1700跌到1010",
   "voice": "S_Dvf6T9yi2",
-  "voiceTargetSeconds": 21.5,
+  "voiceTargetSeconds": 24.0,
   "sourceUrl": "https://www.ceweekly.cn/finance/banking/2026/1027/502033.html",
   "sourceName": "中国证券报（经济网转载）2026-10-27",
   "sourcePublished": "2026-10-27",
-  "period": "金饰/铂金 2026-10-26 · 原料金 2026-10-30",
-  "sourcePeriodNote": "金饰与铂金为批发市场报价，品牌店零售更高；原料金为上金所行情。",
+  "period": "金饰/铂金 2026-10-26 · 原料金 2026-10-30 · 八大类 2026-09",
+  "sourcePeriodNote": "金饰与铂金为批发市场报价，品牌店零售更高；原料金为上金所行情；八大类为国家统计局9月CPI。",
   "monthlyCorrectionUrl": "https://www.sge.com.cn/sjxx/Au99_99",
+  "headerNote": "11月1日更新 · 各口径见页脚",
+  "boardFooter": [
+    "数据时点：金饰/铂金 10/26；原料金 10/30",
+    "来源：中国证券报 · 上海黄金交易所"
+  ],
   "boards": [
     {
       "title": "一克金，三个价",
@@ -58,6 +63,45 @@
           "direction": "down"
         }
       ]
+    },
+    {
+      "title": "八大类，谁在涨谁在跌",
+      "note": "9月CPI同比 · 六类涨、两类跌",
+      "caption": "",
+      "footer": [
+        "数据时点：2026年9月",
+        "来源：国家统计局 2026-10-14"
+      ],
+      "rows": [
+        {
+          "name": "其他用品及服务",
+          "value": "+5.9%",
+          "icon": "💼",
+          "basis": "9月CPI 同比",
+          "direction": "up"
+        },
+        {
+          "name": "交通通信",
+          "value": "+4.3%",
+          "icon": "🚗",
+          "basis": "9月CPI 同比",
+          "direction": "up"
+        },
+        {
+          "name": "食品烟酒",
+          "value": "−0.9%",
+          "icon": "🍚",
+          "basis": "9月CPI 同比",
+          "direction": "down"
+        },
+        {
+          "name": "居住",
+          "value": "−0.3%",
+          "icon": "🏠",
+          "basis": "9月CPI 同比",
+          "direction": "down"
+        }
+      ]
     }
   ],
   "clips": [
@@ -98,47 +142,49 @@
       ]
     },
     {
-      "text": "从年内高点算，金饰跌了四成一。",
-      "caption": "金饰 −41%",
+      "text": "从年内高点算，金饰跌了四成一，铂金腰斩。",
+      "caption": "金饰 −41%｜铂金 −44%",
       "scene": "board",
       "board": 1,
       "active": [
-        0
-      ]
-    },
-    {
-      "text": "铂金更狠，从七百跌到三百九十五，等于腰斩。",
-      "caption": "铂金 −44%，腰斩",
-      "scene": "board",
-      "board": 1,
-      "active": [
+        0,
         1
       ]
     },
     {
-      "text": "买来戴，现在确实比年初便宜不少。",
-      "caption": "买来戴：比年初便宜",
-      "scene": "hook",
-      "icon": "💍",
-      "big": [
-        "买来戴",
-        "现在比年初便宜"
-      ],
-      "colors": [
-        "#2b211b",
-        "#138b4a"
-      ],
-      "note": "想靠它赚钱，别猜底"
+      "text": "再把镜头拉远，看整个物价盘子。",
+      "caption": "八大类：六类涨，两类跌",
+      "scene": "board",
+      "board": 2,
+      "active": [
+        0,
+        1
+      ]
+    },
+    {
+      "text": "九月同比，涨得最凶的是其他用品和服务五点九，交通通信四点三。",
+      "caption": "其他用品 +5.9%｜交通通信 +4.3%",
+      "scene": "board",
+      "board": 2,
+      "active": [
+        0,
+        1
+      ]
+    },
+    {
+      "text": "还在跌的是食品烟酒和居住。",
+      "caption": "食品烟酒 −0.9%｜居住 −0.3%",
+      "scene": "board",
+      "board": 2,
+      "active": [
+        2,
+        3
+      ]
     },
     {
       "text": "关注我，每周日更新。",
       "caption": "什么该买，什么该等",
       "scene": "end"
     }
-  ],
-  "headerNote": "11月1日更新 · 数据时点 10/26—10/30",
-  "boardFooter": [
-    "数据时点：金饰/铂金 10/26；原料金 10/30",
-    "来源：中国证券报 · 上海黄金交易所"
   ]
 }
