@@ -73,7 +73,9 @@ def synth(text, speaker, key):
     }
     req = urllib.request.Request(URL, data=json.dumps(body).encode(),
                                  headers=headers, method="POST")
-    with urllib.request.urlopen(req, timeout=120) as r:
+    # 系统代理时开时关，这里固定直连，避免代理没起时连接被拒
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with opener.open(req, timeout=120) as r:
         raw = r.read()
 
     audio = bytearray()

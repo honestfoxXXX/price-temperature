@@ -76,7 +76,7 @@ const checks = [
 
 if (D.meta.auditMode) {
   const checked = D.categories.flatMap(c=>c.items).filter(x=>x.verified);
-  checks.push(['本期仅8项已核实报价', checked.length===8, `${checked.length}`]);
+  checks.push(['已核实条目数与数据一致', checked.length===D.meta.verifiedCount, `${checked.length}`]);
   checks.push(['更正信息可见', (store.lede.innerHTML||'').includes('同比+46.7%'), '']);
   checks.push(['未核实卡片隐藏旧价', count(list,/暂不展示旧报价/g)===total-checked.length, '']);
   const storage=D.watch.find(x=>x.name==='数据存储设备');

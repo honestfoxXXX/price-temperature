@@ -54,7 +54,7 @@ def base():
     ico=Image.open(R/'assets/logo-icon-128.png').convert('RGBA').resize((78,78),Image.Resampling.LANCZOS)
     img.alpha_composite(ico,(SAFE,104));d.text((SAFE+98,104),'今天贵不贵',font=font(43,True),fill=INK)
     d.text((SAFE+98,158),'什么该买，什么该等',font=font(24),fill=MUTED)
-    d.text((SAFE,235),'10月25日更新 · 数据截至 10/18',font=font(25),fill=MUTED)
+    d.text((SAFE,235),E.get('headerNote',''),font=font(25),fill=MUTED)
     return img
 
 def lines(text,maxwidth,f):
@@ -86,11 +86,12 @@ def board_image(b,active):
         namefont=fit(row['name'],44,385)
         d.text((SAFE+94,y+30),row['name'],font=namefont,fill=INK if selected else '#806c60')
         vf=fit(row['value'],62,258)
-        d.text((RIGHT-24,y+25),row['value'],font=vf,fill=(GREEN if row['direction']=='down' else RED),anchor='ra')
+        d.text((RIGHT-24,y+25),row['value'],font=vf,fill={'down':GREEN,'up':RED}.get(row.get('direction'),'#5a4a40'),anchor='ra')
         bf=fit(row['basis'],23,RIGHT-SAFE-130,False)
         d.text((SAFE+94,y+103),row['basis'],font=bf,fill=MUTED)
-    textblock(img,'统计期：10月12—18日；10月19日发布',1416,25,False,MUTED)
-    textblock(img,'来源：农业农村部 · 全国批发市场周均价',1460,23,False,MUTED)
+    y=1416
+    for line in E.get('boardFooter',[]):
+        textblock(img,line,y,25 if y==1416 else 23,False,MUTED);y+=44
     return img
 
 def scene(c):
@@ -146,7 +147,7 @@ def render():
     voicebuf=np.clip(voicebuf,-.98,.98)
     track=V/'配音混音.wav'
     with wave.open(str(track),'wb') as q:q.setparams((1,2,SR,len(voicebuf),'NONE','not compressed'));q.writeframes((voicebuf*32767).astype('<i2').tobytes())
-    outfile=V/'今天贵不贵-2026-10-25.mp4'
+    outfile=V/('今天贵不贵-'+DAY+'.mp4')
     cmd=[FF,'-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s','1080x1920','-r',str(FPS),'-i','-','-i',str(track),'-c:v','libx264','-preset','fast','-crf','19','-pix_fmt','yuv420p','-af','loudnorm=I=-16:TP=-1.5:LRA=9','-c:a','aac','-b:a','160k','-ar','48000','-ac','2','-shortest','-movflags','+faststart',str(outfile)]
     proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
     frames=[scene(c) for c in E['clips']]
@@ -174,65 +175,62 @@ def assets():
     for h,tag in [(1440,'3x4'),(1920,'9x16')]:
         img=base().crop((0,0,W,h));d=ImageDraw.Draw(img)
         y=390 if h==1440 else 600
-        textblock(img,'这周多买',y,91)
-        textblock(img,'这三样菜',y+140,95,color=GREEN)
-        textblock(img,'青椒 −6.6%',y+340,58,color=GREEN)
-        textblock(img,'大白菜 −6.1%',y+432,58,color=GREEN)
-        textblock(img,'平菇 −5.8%',y+524,58,color=GREEN)
-        textblock(img,'牛肉同比 +11.2%，先别急',h-120,27,False,MUTED)
+        textblock(img,'金饰克价',y,95)
+        textblock(img,'跌到 1010',y+150,95,color=GREEN)
+        textblock(img,'年内最高 1700 元/克',y+330,52,color=MUTED)
+        textblock(img,'原料金 860 元',y+430,56,color=INK)
+        textblock(img,'品牌店约 1200 元',y+510,56,color=RED)
+        textblock(img,'批发市场报价 10/26 · 原料金 10/30',h-120,26,False,MUTED)
         img.convert('RGB').save(OUT/('封面-视频号-'+tag+'.png'))
     cover=Image.new('RGB',(1350,575),'#fff4ea');d=ImageDraw.Draw(cover)
     ico=Image.open(R/'assets/logo-icon-128.png').convert('RGBA').resize((68,68));cover.paste(ico,(100,55),ico)
-    d.text((190,65),'今天贵不贵 · 10月25日更新',font=font(34,True),fill=INK)
-    d.text((100,205),t,font=fit(t,72,1150),fill=INK)
-    d.text((100,345),'青椒 −6.6%　大白菜 −6.1%　平菇 −5.8%',font=font(40,True),fill=GREEN)
-    d.text((100,435),'猪肉同比 −12.6%，牛肉 +11.2%',font=font(36,True),fill=RED)
-    d.text((100,500),'全国批发周均价 · 第42周（10/12—10/18）',font=font(26),fill=MUTED)
+    d.text((190,65),'今天贵不贵 · 11月1日更新',font=font(34,True),fill=INK)
+    d.text((100,200),t,font=fit(t,70,1150),fill=INK)
+    d.text((100,330),'原料金 860 元　批发金饰 1010 元',font=font(40,True),fill=INK)
+    d.text((100,415),'品牌店约 1200 元，差的是工费和品牌',font=font(36,True),fill=RED)
+    d.text((100,500),'金饰/铂金：批发报价 10/26　原料金：上金所 10/30',font=font(25),fill=MUTED)
     cover.save(OUT/'封面-公众号.png')
-    article='''# 这周多买这三样菜，牛肉先别急｜今天贵不贵
 
-这周三样菜比上周便宜了5%以上：**青椒 −6.6%、大白菜 −6.1%、平菇 −5.8%**。
-
-肉这边反过来：猪肉比去年同期便宜12.6%，七块九一斤；牛肉贵了11.2%，三十六块七一斤。一斤牛肉的钱，差不多能买四斤半猪肉。
-
-水果开始反季，西瓜一周涨了4.8%。
-
-【在公众号编辑器中插入本期视频号视频】
-
-【在这里上传本期「长图.jpg」】
-
-以上是农业农村部第42周全国**批发**周均价，统计期10月12—18日，10月19日发布。批发价不等于你家菜场价，但涨跌方向可以参考。
-
-**更正上期：**存储设备上涨46.7%、平板电脑上涨23.6%，均是9月同比，不是月环比。对应月环比为1.7%、1.5%。此前表述有误，已在网站更正。
-
-完整数据：
-https://honestfoxXXX.github.io/price-temperature/
-
-每周日更新。什么该买，什么该等。
-'''
+    article = (
+        '# 金饰克价，从1700跌到1010｜今天贵不贵\n\n'
+        '年内最高 1700 元/克，现在批发市场报 **1010 元/克**，跌了约四成。\n\n'
+        '但同样一克金，价格差得很远：\n\n'
+        '- **原料金 860 元**（上金所 Au99.99，10月30日）\n'
+        '- **批发金饰 1010 元**（北京水贝，10月26日）\n'
+        '- **品牌店约 1200 元**（老庙黄金当日报价）\n\n'
+        '中间的差价是工费和品牌溢价，不是金价本身。买的时候先问克价，再问工费。\n\n'
+        '铂金跌得更狠：从最高 700 元/克跌到 395 元，接近腰斩。\n\n'
+        '【在公众号编辑器中插入本期视频号视频】\n\n'
+        '【在这里上传本期「长图.jpg」】\n\n'
+        '数据来源：中国证券报（经济网转载）10月27日、上海黄金交易所10月30日行情。'
+        '金饰与铂金为批发市场报价，品牌店零售更高。\n\n'
+        '买来戴，现在确实比年初便宜不少；想靠它赚钱，别猜底。\n\n'
+        '完整数据：\nhttps://honestfoxXXX.github.io/price-temperature/\n\n'
+        '每周日更新。什么该买，什么该等。\n'
+    )
     (OUT/'公众号文章.md').write_text(article,encoding='utf-8')
-    (OUT/'发布说明.md').write_text('# 本期发布说明 · '+t+'''
 
-1. 先发布视频号，再在公众号编辑器插入对应视频。
-2. 视频号封面用3x4版，公众号封面用横版。
-3. 公众号正文：三样便宜菜 → 肉价对比 → 水果 → 统计口径 → 更正 → 地址。
-4. 网站“阅读原文”填 https://honestfoxXXX.github.io/price-temperature/ 。
-5. 按发布平台实际选项声明AI复刻配音/AI配乐；不承诺标注对推荐量的影响。
-6. 本期数据截至10月18日，更新日为10月25日；不是第43周行情。
-7. 未操作视频号/公众号账号，尚未替用户发布。
-
-## 视频号短标题
-这周多买这三样菜
-
-## 视频号描述
-青椒−6.6%、大白菜−6.1%、平菇−5.8%，这周三样菜最便宜。
-猪肉同比−12.6%、七块九一斤；牛肉同比+11.2%、三十六块七一斤。
-一斤牛肉的钱，差不多四斤半猪肉。
-西瓜一周+4.8%，反季了。
-数据：农业农村部第42周，10/12—10/18，全国批发周均价。
-#菜价 #物价 #生活成本 #今天吃什么
-''',encoding='utf-8')
+    notes = (
+        '# 本期发布说明 · '+t+'\n\n'
+        '1. 先发布视频号，再在公众号编辑器插入对应视频。\n'
+        '2. 视频号封面用3x4版，公众号封面用横版。\n'
+        '3. 公众号正文：金饰克价 → 三个价对比 → 铂金 → 数据来源 → 地址。\n'
+        '4. 网站“阅读原文”填 https://honestfoxXXX.github.io/price-temperature/ 。\n'
+        '5. 按发布平台实际选项声明AI复刻配音/AI配乐；不承诺标注对推荐量的影响。\n'
+        '6. 金饰/铂金为10月26日批发报价，原料金为10月30日上金所行情；不是同一天的数。\n'
+        '7. 未操作视频号/公众号账号，尚未替用户发布。\n'
+        '8. 不做投资判断，“别猜底”是提示，不是建议。\n\n'
+        '## 视频号短标题\n金饰跌到1010一克\n\n'
+        '## 视频号描述\n'
+        '金饰克价从年内最高1700跌到1010，跌了约四成。\n'
+        '同样一克金：原料金860、批发金饰1010、品牌店约1200，差的是工费和品牌。\n'
+        '铂金从700跌到395，接近腰斩。\n'
+        '数据：中国证券报10/27、上金所10/30。\n'
+        '#金价 #黄金 #买什么划算 #生活成本\n'
+    )
+    (OUT/'发布说明.md').write_text(notes,encoding='utf-8')
     print('Covers and simple article ready')
+
 
 if __name__=='__main__':
     mode=sys.argv[2] if len(sys.argv)>2 else 'assets'

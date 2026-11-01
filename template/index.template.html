@@ -710,7 +710,7 @@
     return '<article class="card'+(known?'':' calm')+'" role="button" tabindex="0" data-id="'+it.id+'"><div class="in">'+
       '<div class="head"><span class="ic">'+it.icon+'</span><span class="tt"><span class="name">'+esc(it.name)+'</span><span class="spec">'+esc(known?it.spec:'保留目录 · 历史资料待核验')+'</span></span><span class="pill neutral">'+(known?'已核实':'待核验')+'</span></div>'+
       '<div class="p"><b class="num">'+(known?p.text:'待核验')+'</b><i>'+(known?esc(p.unit):'')+'</i>'+(known&&p.alt?'<em class="alt">'+p.alt+'</em>':'')+'</div>'+
-      '<div class="d"><span>'+(known?'周环比 '+(pct(it.mom)||'—')+' · 同比 '+(pct(it.yoy)||'未给出'):'暂不展示旧报价、五年分位和购买建议')+'</span></div>'+
+      '<div class="d"><span>'+(known?(((it.mom===null||it.mom===undefined)&&(it.yoy===null||it.yoy===undefined))?'克价 · 数据时点 '+it.asOf:'周环比 '+(pct(it.mom)||'—')+' · 同比 '+(pct(it.yoy)||'未给出')):'暂不展示旧报价、五年分位和购买建议')+'</span></div>'+
       '<p style="font-size:10px;color:#947a67">'+(known?'10/12—10/18 · 批发周均价':'本期未取得可追溯证据，不能视为2026-10-25现价')+'</p></div></article>';
   }
 

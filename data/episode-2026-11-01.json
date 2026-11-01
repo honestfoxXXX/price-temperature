@@ -1,0 +1,144 @@
+{
+  "date": "2026-11-01",
+  "title": "金饰克价，从1700跌到1010",
+  "voice": "S_Dvf6T9yi2",
+  "voiceTargetSeconds": 21.5,
+  "sourceUrl": "https://www.ceweekly.cn/finance/banking/2026/1027/502033.html",
+  "sourceName": "中国证券报（经济网转载）2026-10-27",
+  "sourcePublished": "2026-10-27",
+  "period": "金饰/铂金 2026-10-26 · 原料金 2026-10-30",
+  "sourcePeriodNote": "金饰与铂金为批发市场报价，品牌店零售更高；原料金为上金所行情。",
+  "monthlyCorrectionUrl": "https://www.sge.com.cn/sjxx/Au99_99",
+  "boards": [
+    {
+      "title": "一克金，三个价",
+      "note": "同样是金，差在工费和品牌",
+      "caption": "元/克",
+      "rows": [
+        {
+          "name": "原料金",
+          "value": "860元",
+          "icon": "🏦",
+          "basis": "上金所 Au99.99 · 10/30",
+          "direction": "mid"
+        },
+        {
+          "name": "批发金饰",
+          "value": "1010元",
+          "icon": "💍",
+          "basis": "北京水贝 · 10/26",
+          "direction": "mid"
+        },
+        {
+          "name": "品牌店金饰",
+          "value": "1200元",
+          "icon": "🏬",
+          "basis": "老庙黄金 · 10/26 优惠前",
+          "direction": "mid"
+        }
+      ]
+    },
+    {
+      "title": "从年内高点算",
+      "note": "批发市场报价，不是零售价",
+      "caption": "",
+      "rows": [
+        {
+          "name": "金饰",
+          "value": "−41%",
+          "icon": "💍",
+          "basis": "1700 → 1010 元/克",
+          "direction": "down"
+        },
+        {
+          "name": "铂金首饰",
+          "value": "−44%",
+          "icon": "💠",
+          "basis": "700 → 395 元/克",
+          "direction": "down"
+        }
+      ]
+    }
+  ],
+  "clips": [
+    {
+      "text": "金饰克价，从一千七跌到一千零一。",
+      "caption": "金饰克价：1700 → 1010",
+      "scene": "hook",
+      "icon": "💍",
+      "big": [
+        "金饰克价",
+        "跌到1010"
+      ],
+      "colors": [
+        "#2b211b",
+        "#138b4a"
+      ],
+      "note": "年内最高 1700 元/克"
+    },
+    {
+      "text": "同样一克金，原料八百六，批发金饰一千零一，品牌店一千二。",
+      "caption": "原料860｜批发1010｜品牌店1200",
+      "scene": "board",
+      "board": 0,
+      "active": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "text": "差的这三百四，是工费和品牌溢价，不是金价。",
+      "caption": "差340元：工费 + 品牌",
+      "scene": "board",
+      "board": 0,
+      "active": [
+        1,
+        2
+      ]
+    },
+    {
+      "text": "从年内高点算，金饰跌了四成一。",
+      "caption": "金饰 −41%",
+      "scene": "board",
+      "board": 1,
+      "active": [
+        0
+      ]
+    },
+    {
+      "text": "铂金更狠，从七百跌到三百九十五，等于腰斩。",
+      "caption": "铂金 −44%，腰斩",
+      "scene": "board",
+      "board": 1,
+      "active": [
+        1
+      ]
+    },
+    {
+      "text": "买来戴，现在确实比年初便宜不少。",
+      "caption": "买来戴：比年初便宜",
+      "scene": "hook",
+      "icon": "💍",
+      "big": [
+        "买来戴",
+        "现在比年初便宜"
+      ],
+      "colors": [
+        "#2b211b",
+        "#138b4a"
+      ],
+      "note": "想靠它赚钱，别猜底"
+    },
+    {
+      "text": "关注我，每周日更新。",
+      "caption": "什么该买，什么该等",
+      "scene": "end"
+    }
+  ],
+  "headerNote": "11月1日更新 · 数据时点 10/26—10/30",
+  "boardFooter": [
+    "数据时点：金饰/铂金 10/26；原料金 10/30",
+    "来源：中国证券报 · 上海黄金交易所"
+  ]
+}
