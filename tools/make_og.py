@@ -57,16 +57,30 @@ def main():
     data = json.loads((ROOT / "data" / "prices.json").read_text(encoding="utf-8"))
     meta = data["meta"]
     if meta.get("auditMode"):
-        img = Image.new('RGB', (W,H), '#fff4ea')
+        import re
+        img = Image.new('RGB', (W, H), '#fff4ea')
         d = ImageDraw.Draw(img)
-        icon = Image.open(ROOT/'assets/logo-icon-128.png').convert('RGBA').resize((64,64))
-        img.paste(icon,(76,60),icon)
-        d.text((160,68),meta['title'],font=font(FONT_BOLD,36),fill=INK)
-        d.text((76,205),'这周多买这三样菜',font=font(FONT_BOLD,64),fill=INK)
-        d.text((76,320),'青椒 −6.6%｜大白菜 −6.1%｜平菇 −5.8%',font=font(FONT_BOLD,40),fill=GREEN)
-        d.text((76,440),'统计期：10/12—10/18 · 全国批发周均价',font=font(FONT_REG,25),fill=INK2)
-        d.text((76,510),'核验更新：'+meta['asOf']+' · 对未核实条目暂不下结论',font=font(FONT_REG,23),fill=INK2)
-        img.save(OUT,optimize=True)
+        icon = Image.open(ROOT / 'assets/logo-icon-128.png').convert('RGBA').resize((64, 64))
+        img.paste(icon, (76, 60), icon)
+        d.text((160, 68), meta['title'], font=font(FONT_BOLD, 36), fill=INK)
+
+        head = re.sub(r'<[^>]+>', '', meta['headline'])
+        head = head.replace('，', '，').rstrip('。')
+        verified = [i for c in data['categories'] for i in c['items'] if i.get('verified')]
+        top = sorted([i for i in verified if i.get('mom') is not None],
+                     key=lambda x: -abs(x['mom']))[:3]
+        stat = '｜'.join(
+            '%s %s%.1f%%' % (i['name'].replace('28种', '28种').replace('均价', ''),
+                            '+' if i['mom'] > 0 else '−', abs(i['mom']))
+            for i in top)
+        period = verified[0].get('period', '') if verified else ''
+
+        d.text((76, 205), head, font=font(FONT_BOLD, 58), fill=INK)
+        d.text((76, 320), stat, font=font(FONT_BOLD, 40), fill=INK2)
+        d.text((76, 440), '统计期：' + period + ' · 全国批发周均价', font=font(FONT_REG, 25), fill=INK2)
+        d.text((76, 510), '核验更新：' + meta['asOf'] + ' · 对未核实条目暂不下结论',
+               font=font(FONT_REG, 23), fill=INK2)
+        img.save(OUT, optimize=True)
         print('[ok] Audit-mode social preview:', OUT)
         return 0
     items = [it for c in data["categories"] for it in c["items"]]

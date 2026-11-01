@@ -85,7 +85,8 @@ if (D.meta.auditMode) {
   click({target:{closest(){return {getAttribute(){return 'down'}}}}});
   checks.push(['待核验弹层不显示历史报价', store['m-price'].innerHTML.includes('待核验')&&!store['m-price'].innerHTML.includes('899'), '']);
   click({target:{closest(){return {getAttribute(){return 'egg'}}}}});
-  checks.push(['鸡蛋弹层显示周环比与统计期', store['m-ref'].textContent.includes('周环比')&&store['m-spec'].textContent.includes('2026-10-12'), '']);
+  const eggPeriod=D.categories.flatMap(c=>c.items).find(x=>x.id==='egg').period;
+  checks.push(['鸡蛋弹层显示周环比与统计期', store['m-ref'].textContent.includes('周环比')&&store['m-spec'].textContent.includes(eggPeriod), eggPeriod]);
 }
 
 let bad = 0;
