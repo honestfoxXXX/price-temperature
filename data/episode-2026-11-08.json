@@ -9,7 +9,6 @@
   "period": "2026年9月 · 同比",
   "sourcePeriodNote": "9月CPI分项同比；不是双11当天价格，也不代表某款具体型号。",
   "monthlyCorrectionUrl": "https://www.stats.gov.cn/sj/zxfbhjd/202610/t20261014_1965475.html",
-  "headerNote": "11月8日更新 · 双11 该买什么",
   "boardFooter": [
     "数据时点：2026年9月",
     "来源：国家统计局 2026-10-14"
@@ -17,8 +16,7 @@
   "boards": [
     {
       "title": "整机：比去年贵多少",
-      "note": "9月CPI同比",
-      "caption": "同一条链",
+      "note": "同一条链：存储涨，整机跟着涨",
       "rows": [
         {
           "name": "数据存储设备",
@@ -51,8 +49,8 @@
       ]
     },
     {
-      "title": "家里用的：基本没涨",
-      "note": "9月CPI同比",
+      "title": "家里用的：还在跌",
+      "note": "家电是少见的还在跌的大件",
       "caption": "",
       "rows": [
         {

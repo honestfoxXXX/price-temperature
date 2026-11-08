@@ -13,7 +13,7 @@ DAY=sys.argv[1] if len(sys.argv)>1 else '2026-10-25'
 E=json.loads((R/'data'/('episode-'+DAY+'.json')).read_text(encoding='utf-8'))
 OUT=R/'output'/DAY; V=OUT/'视频'; V.mkdir(parents=True,exist_ok=True)
 FF=imageio_ffmpeg.get_ffmpeg_exe(); W,H,FPS,SR=1080,1920,30,24000
-SAFE=104; RIGHT=W-SAFE; INK='#2b211b'; MUTED='#806b5d'; ORANGE='#ff5a1f'; RED='#cf3b31'; GREEN='#138b4a'
+SAFE=104; RIGHT=W-SAFE; INK=(43,33,27); MUTED=(128,107,93); ORANGE=(255,90,31); RED=(207,59,49); GREEN=(19,139,74)
 @lru_cache(maxsize=64)
 def font(size,bold=False,emoji=False):
     return ImageFont.truetype('C:/Windows/Fonts/'+('seguiemj.ttf' if emoji else 'msyhbd.ttc' if bold else 'msyh.ttc'),size)
@@ -48,15 +48,17 @@ def voice():
     (V/'voice-manifest.json').write_text(json.dumps({'voice':E['voice'],'rawSeconds':dur,'tempo':ratio,'clips':[c['text'] for c in E['clips']]},ensure_ascii=False,indent=2),encoding='utf-8')
     print('Cloned voice ready; tempo',round(ratio,3),flush=True)
 
+def _rgba(h,a=255):
+    h=h.lstrip('#')
+    return (int(h[0:2],16),int(h[2:4],16),int(h[4:6],16),max(0,min(255,int(a))))
+
 def base():
     a=np.zeros((H,W,3),dtype=np.uint8)
     for y in range(H):a[y,:,:]=(255,int(248-10*y/H),int(241-15*y/H))
     img=Image.fromarray(a).convert('RGBA');d=ImageDraw.Draw(img)
-    # Fixed branding within 104px safe area.
     ico=Image.open(R/'assets/logo-icon-128.png').convert('RGBA').resize((78,78),Image.Resampling.LANCZOS)
     img.alpha_composite(ico,(SAFE,104));d.text((SAFE+98,104),'今天贵不贵',font=font(43,True),fill=INK)
     d.text((SAFE+98,158),'什么该买，什么该等',font=font(24),fill=MUTED)
-    d.text((SAFE,235),E.get('headerNote',''),font=font(25),fill=MUTED)
     return img
 
 def lines(text,maxwidth,f):
@@ -75,46 +77,88 @@ def textblock(img,text,y,size=54,bold=True,color=INK,width=None):
         d.text((SAFE,y),line,font=f,fill=color);y+=int(size*1.5)
     return y
 
-def board_image(b,active):
-    img=base();d=ImageDraw.Draw(img)
-    textblock(img,b['title'],355,62)
-    textblock(img,b['note'],455,27,False,MUTED)
-    count=len(b['rows']);rh=184 if count>2 else 250;top=590 if count>2 else 665
-    for i,row in enumerate(b['rows']):
-        y=top+i*rh;selected=i in active
-        d.rounded_rectangle((SAFE,y,RIGHT,y+rh-18),radius=24,fill='#ffffff' if selected else '#f5ebe3',outline='#ffc7a5' if selected else '#e6d6c8',width=3 if selected else 1)
-        d.text((SAFE+22,y+40),row['icon'],font=font(49,emoji=True),embedded_color=True)
-        # Names and values occupy separate nonoverlapping columns.
-        namefont=fit(row['name'],44,385)
-        d.text((SAFE+94,y+30),row['name'],font=namefont,fill=INK if selected else '#806c60')
-        vf=fit(row['value'],62,258)
-        d.text((RIGHT-24,y+25),row['value'],font=vf,fill={'down':GREEN,'up':RED}.get(row.get('direction'),'#5a4a40'),anchor='ra')
-        bf=fit(row['basis'],23,RIGHT-SAFE-130,False)
-        d.text((SAFE+94,y+103),row['basis'],font=bf,fill=MUTED)
-    y=1416
-    for line in (b.get('footer') or E.get('boardFooter',[])):
-        textblock(img,line,y,25 if y==1416 else 23,False,MUTED);y+=44
+def ease(t): return 1-(1-t)**3
+
+def _grad(w):
+    w=max(1,int(w));g=Image.new('RGBA',(w,26),(0,0,0,0));d=ImageDraw.Draw(g)
+    for x in range(w):
+        t=x/max(1,w-1)
+        d.line([(x,0),(x,25)],fill=(int(255-48*t),int(138-79*t),int(76-27*t),255))
+    return g
+
+def board_image(b,local):
+    """横向条形图：长度＝幅度，数字同步滚动，逐行入场。"""
+    img=base();a=ImageDraw.Draw(img)
+    p=min(1.0,local/0.32)
+    a.text((SAFE,330+int((1-ease(p))*26)),b['title'],font=font(68),fill=INK+(int(255*p),))
+    a.rounded_rectangle((SAFE,430,SAFE+int(120*ease(p)),436),radius=3,fill=ORANGE+(int(255*p),))
+    rows=b['rows']
+    vals=[abs(float(str(r['value']).replace('+','').replace('−','-').replace('%',''))) for r in rows]
+    mx=max(vals) or 1
+    neg=[str(r['value']).startswith(('−','-')) for r in rows]
+    mixed=any(neg) and not all(neg)
+    top=500 if len(rows)>=3 else 640;rh=250 if len(rows)<=4 else 205
+    for i,row in enumerate(rows):
+        t0=0.30+i*0.13
+        rp=min(1.0,max(0.0,(local-t0)/0.30))
+        if rp<=0:continue
+        y=top+i*rh+int((1-ease(rp))*46);alpha=int(255*ease(rp))
+        a.text((SAFE,y+4),row['icon'],font=font(50,emoji=True),embedded_color=True)
+        a.text((SAFE+68,y),row['name'],font=fit(row['name'],46,560),fill=INK+(alpha,))
+        bp=min(1.0,max(0.0,(local-t0-0.06)/0.95))
+        sign='−' if neg[i] else '+'
+        num=vals[i]*ease(bp)
+        color=GREEN if neg[i] else RED
+        a.text((RIGHT,y-6),'%s%.1f%%'%(sign,num),font=font(64),fill=color+(alpha,),anchor='ra')
+        ty=y+118
+        a.rounded_rectangle((SAFE,ty,RIGHT,ty+26),radius=13,fill=(240,226,214,alpha))
+        if mixed:
+            cx=SAFE+(RIGHT-SAFE)//2
+            a.line((cx,ty-16,cx,ty+42),fill=(206,188,173,alpha),width=3)
+        span=RIGHT-SAFE
+        half=span//2 if mixed else span
+        length=int(half*(vals[i]/mx)*ease(bp))
+        if length>8:
+            if mixed:
+                cx=SAFE+span//2
+                x0=cx-length if neg[i] else cx
+            else:
+                x0=SAFE
+            g=_grad(length) if not neg[i] else Image.new('RGBA',(length,26),GREEN+(255,))
+            mask=Image.new('L',(length,26),0)
+            ImageDraw.Draw(mask).rounded_rectangle((0,0,length-1,25),radius=13,fill=255)
+            if alpha<255:mask=mask.point(lambda v:int(v*alpha/255))
+            img.paste(g,(x0,ty),mask)
+    if b.get('note'):
+        cp=min(1.0,max(0.0,(local-2.4)/0.5))
+        if cp>0:
+            a.text((SAFE,1452+int((1-ease(cp))*20)),b['note'],font=font(40),fill=MUTED+(int(255*ease(cp)),))
     return img
 
-def scene(c):
-    if c['scene']=='board':return board_image(E['boards'][c['board']],c['active'])
-    img=base()
+def scene(c,local=0.0):
+    if c['scene']=='board':return board_image(E['boards'][c['board']],local)
+    img=base();d=ImageDraw.Draw(img)
     if c['scene']=='hook':
-        d=ImageDraw.Draw(img)
+        p=min(1.0,local/0.34)
         d.text((SAFE,435),c.get('icon','🥬'),font=font(135,emoji=True),embedded_color=True)
         y=630
         colors=c.get('colors',[])
-        for i,line in enumerate(c.get('big') or ['这周买菜']):
-            textblock(img,line,y,91,color=colors[i] if i<len(colors) else INK);y+=140
-        if c.get('note'):textblock(img,c['note'],y+18,35,False,MUTED)
+        for i,line in enumerate(c.get('big') or ['这周']):
+            lp=min(1.0,max(0.0,(local-0.08*i)/0.34))
+            if lp>0:
+                col=_rgba(colors[i] if i<len(colors) else '#2b211b',255*ease(lp))
+                textblock(img,line,y+int((1-ease(lp))*40),91,color=col)
+            y+=140
+        if c.get('note'):
+            np_=min(1.0,max(0.0,(local-0.5)/0.4))
+            if np_>0:textblock(img,c['note'],y+18,35,False,MUTED)
     else:
-        d=ImageDraw.Draw(img)
+        p=min(1.0,local/0.4)
         textblock(img,'该买的趁现在',520,88)
         textblock(img,'该等的别急。',655,83,color=ORANGE)
-        textblock(img,'每周日，更新有出处的数据。',900,40)
+        textblock(img,'每周日更新有出处的数据。',900,40)
         d.rounded_rectangle((SAFE,1065,RIGHT,1180),radius=40,fill=ORANGE)
         d.text(((SAFE+RIGHT)//2,1120),'关注「今天贵不贵」',font=font(48,True),fill='white',anchor='mm')
-        textblock(img,'AI复刻配音 · AI生成配乐',1290,24,False,MUTED)
     return img
 
 def subtitle(img,text):
@@ -122,7 +166,7 @@ def subtitle(img,text):
     layer=Image.new('RGBA',(RIGHT-SAFE,ph),(0,0,0,0));d=ImageDraw.Draw(layer)
     d.rounded_rectangle((0,0,layer.width-1,ph-1),radius=24,fill=(255,255,255,240))
     for i,l in enumerate(ls):d.text((30,12+i*56),l,font=font(39,True),fill=INK)
-    img.alpha_composite(layer,(SAFE,1550))
+    img.alpha_composite(layer,(SAFE,1585))
 
 def render():
     manifest=json.loads((V/'voice-manifest.json').read_text(encoding='utf-8'))
@@ -152,23 +196,53 @@ def render():
     outfile=V/('今天贵不贵-'+DAY+'.mp4')
     cmd=[FF,'-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s','1080x1920','-r',str(FPS),'-i','-','-i',str(track),'-c:v','libx264','-preset','fast','-crf','19','-pix_fmt','yuv420p','-af','acompressor=threshold=-16dB:ratio=3:attack=5:release=150,treble=g=2,loudnorm=I=-16:TP=-1.5:LRA=9','-c:a','aac','-b:a','160k','-ar','48000','-ac','2','-shortest','-movflags','+faststart',str(outfile)]
     proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
-    frames=[scene(c) for c in E['clips']]
     srt=[]
     def stamp(t):
         ms=round(t*1000);return '%02d:%02d:%02d,%03d'%(ms//3600000,ms//60000%60,ms//1000%60,ms%1000)
     for i,c in enumerate(E['clips']):srt.append('%d\n%s --> %s\n%s\n'%(i+1,stamp(starts[i]),stamp(starts[i]+len(arrays[i])/SR),c['text']))
     (V/'字幕.srt').write_text('\n'.join(srt),encoding='utf-8-sig')
-    for f in range(count):
-        tm=f/FPS;idx=max([i for i,s in enumerate(starts) if tm>=s] or [0]);img=frames[idx].copy()
-        # A moving colored accent and active rows, without moving the safe-area text.
-        d=ImageDraw.Draw(img);d.rounded_rectangle((SAFE,330,SAFE+int((RIGHT-SAFE)*max(0.,min(1.,(tm-starts[idx])/.22))),338),radius=4,fill=ORANGE)
+
+    ends=starts[1:]+[total]
+    XF=0.24
+    def shot(idx,local):
+        img=scene(E['clips'][idx],local)
+        d=ImageDraw.Draw(img)
+        d.rounded_rectangle((SAFE,1800,RIGHT,1806),radius=3,fill='#e4d4c8')
+        d.rounded_rectangle((SAFE,1800,SAFE+int((RIGHT-SAFE)*min(1.,(starts[idx]+local)/total)),1806),radius=3,fill=ORANGE)
         subtitle(img,E['clips'][idx]['caption'])
-        d=ImageDraw.Draw(img);d.rounded_rectangle((SAFE,1800,RIGHT,1806),radius=3,fill='#e4d4c8');d.rounded_rectangle((SAFE,1800,SAFE+int((RIGHT-SAFE)*tm/total),1806),radius=3,fill=ORANGE)
-        proc.stdin.write(img.convert('RGB').tobytes())
+        return img
+
+    def push(a,b,k):
+        """b 从下方推入，a 向上退出。"""
+        ca=a if a.mode=='RGBA' else a.convert('RGBA')
+        cb=b if b.mode=='RGBA' else b.convert('RGBA')
+        out=Image.new('RGBA',(W,H),(255,246,236,255))
+        out.paste(ca,(0,-int(H*k)));out.paste(cb,(0,int(H*(1-k))))
+        return out
+
+    for f in range(count):
+        tm=f/FPS;idx=max([i for i,s in enumerate(starts) if tm>=s] or [0])
+        local=tm-starts[idx]
+        cur=scene(E['clips'][idx],local)
+        if idx>0 and local<XF:
+            prev=scene(E['clips'][idx-1],ends[idx-1]-starts[idx-1])
+            img=push(prev,cur,ease(local/XF))
+        else:
+            img=cur
+        d=ImageDraw.Draw(img)
+        d.rounded_rectangle((SAFE,1800,RIGHT,1806),radius=3,fill='#e4d4c8')
+        d.rounded_rectangle((SAFE,1800,SAFE+int((RIGHT-SAFE)*tm/total),1806),radius=3,fill=ORANGE)
+        subtitle(img,E['clips'][idx]['caption'])
+        # 镜头：全片缓慢推近 3%
+        z=1.0+0.03*(tm/total)
+        crop=img.convert('RGB').resize((int(W*z),int(H*z)),Image.LANCZOS)
+        left=(crop.width-W)//2;top=(crop.height-H)//2
+        proc.stdin.write(crop.crop((left,top,left+W,top+H)).tobytes())
     proc.stdin.close();rc=proc.wait()
     if rc:raise RuntimeError('Encoder failed '+str(rc))
     for i in sorted({0,1,3,len(E['clips'])-1}):
-        im=frames[i].copy();subtitle(im,E['clips'][i]['caption']);im.convert('RGB').save(V/('预览-%02d.png'%i))
+        im=shot(i,min(2.6,ends[i]-starts[i]))
+        im.convert('RGB').save(V/('预览-%02d.png'%i))
     (V/'timing.json').write_text(json.dumps({'duration':total,'starts':starts,'safeMarginPixels':SAFE,'voice':E['voice'],'sources':[E['sourceUrl'],E['monthlyCorrectionUrl']]},ensure_ascii=False,indent=2),encoding='utf-8')
     print('Rendered',outfile,'seconds',round(total,2),flush=True)
 
@@ -186,7 +260,7 @@ def assets():
         img.convert('RGB').save(OUT/('封面-视频号-'+tag+'.png'))
     cover=Image.new('RGB',(1350,575),'#fff4ea');d=ImageDraw.Draw(cover)
     ico=Image.open(R/'assets/logo-icon-128.png').convert('RGBA').resize((68,68));cover.paste(ico,(100,55),ico)
-    d.text((190,65),'今天贵不贵 · 11月8日更新',font=font(34,True),fill=INK)
+    d.text((190,65),'今天贵不贵',font=font(34,True),fill=INK)
     d.text((100,200),t,font=fit(t,70,1150),fill=INK)
     d.text((100,330),'电脑 +21.8%　手机 +14.9%　平板 +23.6%',font=font(36,True),fill=RED)
     d.text((100,410),'家电 −1.8%，是今年少见的在跌的大件',font=font(34,True),fill=GREEN)
