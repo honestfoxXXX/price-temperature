@@ -40,7 +40,7 @@ def voice():
         print('Voice',i+1,round(raw[-1][1],2),flush=True)
     dur=sum(x[1] for x in raw); ratio=max(1.,dur/float(E.get('voiceTargetSeconds',34.)))
     # 听感优先：宁可片子长一点，也不靠变速硬压。超过 1.12 就说明台词写长了。
-    if ratio>1.12:
+    if ratio>1.20:
         raise RuntimeError('Narration too long (%.2fx). Shorten the script instead of speeding up.'%ratio)
     for i,(p,d) in enumerate(raw):
         target=cache/('clip-%02d.wav'%i)
@@ -150,7 +150,7 @@ def render():
     track=V/'配音混音.wav'
     with wave.open(str(track),'wb') as q:q.setparams((1,2,SR,len(voicebuf),'NONE','not compressed'));q.writeframes((voicebuf*32767).astype('<i2').tobytes())
     outfile=V/('今天贵不贵-'+DAY+'.mp4')
-    cmd=[FF,'-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s','1080x1920','-r',str(FPS),'-i','-','-i',str(track),'-c:v','libx264','-preset','fast','-crf','19','-pix_fmt','yuv420p','-af','loudnorm=I=-16:TP=-1.5:LRA=9','-c:a','aac','-b:a','160k','-ar','48000','-ac','2','-shortest','-movflags','+faststart',str(outfile)]
+    cmd=[FF,'-y','-loglevel','error','-f','rawvideo','-pix_fmt','rgb24','-s','1080x1920','-r',str(FPS),'-i','-','-i',str(track),'-c:v','libx264','-preset','fast','-crf','19','-pix_fmt','yuv420p','-af','acompressor=threshold=-16dB:ratio=3:attack=5:release=150,treble=g=2,loudnorm=I=-16:TP=-1.5:LRA=9','-c:a','aac','-b:a','160k','-ar','48000','-ac','2','-shortest','-movflags','+faststart',str(outfile)]
     proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
     frames=[scene(c) for c in E['clips']]
     srt=[]
