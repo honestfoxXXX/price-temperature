@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-08",
+  "title": "双11 该买什么，别急着买什么",
+  "voice": "S_Dvf6T9yi2",
+  "voiceTargetSeconds": 34,
+  "sourceUrl": "https://www.stats.gov.cn/sj/zxfb/202610/t20261014_1965477.html",
+  "sourceName": "国家统计局 2026年9月CPI",
+  "sourcePublished": "2026-10-14",
+  "period": "2026年9月 · 同比",
+  "sourcePeriodNote": "9月CPI分项同比；不是双11当天价格，也不代表某款具体型号。",
+  "monthlyCorrectionUrl": "https://www.stats.gov.cn/sj/zxfbhjd/202610/t20261014_1965475.html",
+  "headerNote": "11月8日更新 · 双11 该买什么",
+  "boardFooter": ["数据时点：2026年9月", "来源：国家统计局 2026-10-14"],
+  "boards": [
+    {"title": "整机：比去年贵多少", "note": "9月CPI同比", "caption": "同一条链",
+     "rows": [
+       {"name": "数据存储设备", "value": "+46.7%", "icon": "💾", "basis": "9月同比", "direction": "up"},
+       {"name": "平板电脑", "value": "+23.6%", "icon": "📱", "basis": "9月同比", "direction": "up"},
+       {"name": "计算机", "value": "+21.8%", "icon": "💻", "basis": "9月同比", "direction": "up"},
+       {"name": "移动电话机", "value": "+14.9%", "icon": "📞", "basis": "9月同比", "direction": "up"}
+     ]},
+    {"title": "家里用的：基本没涨", "note": "9月CPI同比", "caption": "",
+     "rows": [
+       {"name": "家用器具", "value": "−1.8%", "icon": "🔌", "basis": "9月同比", "direction": "down"},
+       {"name": "生活用品及服务", "value": "+0.2%", "icon": "🧴", "basis": "9月同比", "direction": "up"}
+     ]}
+  ],
+  "clips": [
+    {"text": "双十一想换电脑和手机的，先别急。", "caption": "双11 先别急：这两样在涨", "scene": "hook",
+     "icon": "🛒", "big": ["双11 先别急", "这两样在涨"], "colors": ["#2b211b", "#cf3b31"],
+     "note": "9月比去年，整机全在涨"},
+    {"text": "计算机比去年贵两成一，平板贵两成三。", "caption": "计算机 +21.8%｜平板 +23.6%", "scene": "board", "board": 0, "active": [2, 1]},
+    {"text": "手机贵一成五，存储芯片贵了四成七。", "caption": "手机 +14.9%｜存储 +46.7%", "scene": "board", "board": 0, "active": [3, 0]},
+    {"text": "这四个是一条链上的，存储涨价，整机跟着涨。", "caption": "同一条链：存储 → 整机", "scene": "board", "board": 0, "active": [0, 1, 2, 3]},
+    {"text": "反过来，家电比去年便宜了一点八，日用品基本没动。", "caption": "家用器具 −1.8%｜日用品 +0.2%", "scene": "board", "board": 1, "active": [0, 1]},
+    {"text": "所以这波，家电可以买，电脑手机再等等。", "caption": "该买家电，电脑手机再等等", "scene": "hook",
+     "icon": "✅", "big": ["该买家电", "电脑手机再等等"], "colors": ["#2b211b", "#138b4a"],
+     "note": "折扣因店而异，这里说的是整体价格"},
+    {"text": "关注我，每周日更新。", "caption": "什么该买，什么该等", "scene": "end"}
+  ]
+}

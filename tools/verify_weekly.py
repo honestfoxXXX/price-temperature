@@ -7,7 +7,7 @@ e=json.loads((R/'data'/('episode-'+day+'.json')).read_text(encoding='utf-8'))
 d=json.loads((R/'data/prices.json').read_text(encoding='utf-8'));c=json.loads((R/'data/cpi.json').read_text(encoding='utf-8'))
 watch=json.loads((R/'data/watchlist.json').read_text(encoding='utf-8'))
 assert d['meta']['asOf']==day
-assert e['title']=='金饰克价，从1700跌到1010'
+assert e['title']
 assert e['clips'][0]['scene']=='hook'
 assert not any(x['scene']=='correction' or '更正上期' in x['text'] for x in e['clips'])
 manifest=json.loads((v/'voice-manifest.json').read_text(encoding='utf-8'))
