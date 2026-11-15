@@ -1,0 +1,27 @@
+{
+  "verifiedAt": "2026-11-15",
+  "sources": [
+    "https://www.moa.gov.cn/ztzl/nybrl/rlxx/202611/t20261110_6489322.htm",
+    "https://www.stats.gov.cn/xxgk/sjfb/zxfb2020/202611/t20261109_1965795.html"
+  ],
+  "weeklyPeriod": "2026-11-02—2026-11-08",
+  "weeklyPublishedAt": "2026-11-09",
+  "monthlyPeriod": "2026-10",
+  "monthlyPublishedAt": "2026-11-09",
+  "index200": {
+    "value": 111.15,
+    "wow": -0.38,
+    "yoy": -16.67
+  },
+  "verifiedPriceItems": [
+    "pork",
+    "beef",
+    "lamb",
+    "chicken",
+    "egg",
+    "veg",
+    "fruit",
+    "fish"
+  ],
+  "pendingLegacyItems": 62
+}

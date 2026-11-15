@@ -77,10 +77,10 @@ const checks = [
 if (D.meta.auditMode) {
   const checked = D.categories.flatMap(c=>c.items).filter(x=>x.verified);
   checks.push(['已核实条目数与数据一致', checked.length===D.meta.verifiedCount, `${checked.length}`]);
-  checks.push(['更正信息可见', (store.lede.innerHTML||'').includes('同比+46.7%'), '']);
+  checks.push(['本期结论可见', (store.lede.textContent||'').includes('梭子蟹'), '']);
   checks.push(['未核实卡片隐藏旧价', count(list,/暂不展示旧报价/g)===total-checked.length, '']);
-  const storage=D.watch.find(x=>x.name==='数据存储设备');
-  checks.push(['存储同比与月环比未混淆', storage.yoy===46.7&&storage.mom===1.7, '']);
+  const egg=D.watch.find(x=>x.name==='蛋类');
+  checks.push(['CPI分项走月环比口径', egg && egg.mom===-5.2 && egg.yoy===10.1, egg?`${egg.mom}/${egg.yoy}`:'missing']);
   const click=store.list.listeners.click[0];
   click({target:{closest(){return {getAttribute(){return 'down'}}}}});
   checks.push(['待核验弹层不显示历史报价', store['m-price'].innerHTML.includes('待核验')&&!store['m-price'].innerHTML.includes('899'), '']);

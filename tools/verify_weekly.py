@@ -17,11 +17,11 @@ assert e['title'] in (out/'发布说明.md').read_text(encoding='utf-8')
 assert e['title'] in (out/'发布说明.md').read_text(encoding='utf-8')
 food=[i for cat in d['categories'] for i in cat['items'] if i.get('verified')]
 assert len(food)==11
-assert next(i for i in food if i['id']=='egg')['mom']==-2.7
+assert next(i for i in food if i['id']=='egg')['mom']==1.7
 assert next(i for i in food if i['id']=='gold-jewelry')['price']==1010
 assert next(i for i in food if i['id']=='gold-spot')['price']==860.04
-assert next(i for i in watch['items'] if i['name']=='数据存储设备')['mom']==1.7
-assert next(i for i in c['rows'] if i['name']=='平板电脑')['yoy']==23.6
+assert next(i for i in watch['items'] if i['name']=='鲫鱼')['mom']==-1.0
+assert next(i for i in c['rows'] if i['name']=='鲜菜')['yoy']==-16.9
 t=json.loads((v/'timing.json').read_text(encoding='utf-8'))
 assert t['duration']<=35 and t['safeMarginPixels']>=100 and t['voice']==e['voice']
 mp=v/('今天贵不贵-'+day+'.mp4');ff=imageio_ffmpeg.get_ffmpeg_exe()

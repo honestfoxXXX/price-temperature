@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-15",
+  "title": "梭子蟹三十多一斤，海鲜真的便宜了",
+  "voice": "S_Dvf6T9yi2",
+  "voiceTargetSeconds": 26,
+  "sourceUrl": "http://paper.people.com.cn/rmrb/pc/content/202611/11/content_30190542.html",
+  "sourceName": "人民日报 2026-11-11《大众海鲜更平价》",
+  "sourcePublished": "2026-11-11",
+  "period": "人民日报 11/11 · 农业部第45周 · 10月CPI",
+  "sourcePeriodNote": "梭子蟹、龙虾为市场零售价；周报为全国批发周均价。",
+  "monthlyCorrectionUrl": "https://www.moa.gov.cn/ztzl/nybrl/rlxx/202611/t20261110_6489322.htm",
+  "boardFooter": ["来源：人民日报 · 农业农村部"],
+  "boards": [
+    {"title": "开海之后，降了多少", "note": "开海后量增价降，成交明显活跃", "caption": "",
+     "rows": [
+       {"name": "波士顿龙虾", "value": "−50%", "icon": "🦞", "basis": "150 → 60 元/斤", "direction": "down"},
+       {"name": "梭子蟹", "value": "−30%", "icon": "🦀", "basis": "开渔前后 · 半斤规格", "direction": "down"}
+     ]},
+    {"title": "但不是全都便宜", "note": "带鱼和黄花鱼反而在涨", "caption": "",
+     "rows": [
+       {"name": "大带鱼", "value": "+1.1%", "icon": "🐟", "basis": "批发周环比", "direction": "up"},
+       {"name": "大黄花鱼", "value": "+0.2%", "icon": "🐠", "basis": "批发周环比", "direction": "up"},
+       {"name": "草鱼", "value": "−0.9%", "icon": "🐟", "basis": "批发周环比", "direction": "down"},
+       {"name": "鲫鱼", "value": "−1.0%", "icon": "🐟", "basis": "批发周环比", "direction": "down"}
+     ]}
+  ],
+  "clips": [
+    {"text": "梭子蟹，从六七十降到三十多一斤。", "caption": "梭子蟹 30—60 元一斤", "scene": "hook",
+     "icon": "🦀", "big": ["梭子蟹", "三十多一斤"], "colors": ["#2b211b", "#138b4a"],
+     "note": "国庆时还要六七十"},
+    {"text": "龙虾更狠，一斤从一百五跌到六十。", "caption": "波士顿龙虾：150 → 60 元/斤", "scene": "board", "board": 0, "active": [0]},
+    {"text": "半斤左右的梭子蟹，开渔后掉了三成。", "caption": "梭子蟹（半斤）：−30%", "scene": "board", "board": 0, "active": [1]},
+    {"text": "但不是所有海鲜都便宜。", "caption": "不是全都便宜", "scene": "board", "board": 1, "active": [0, 1]},
+    {"text": "大带鱼涨了一成一，大黄花鱼也在涨。", "caption": "大带鱼 +1.1%｜大黄花鱼 +0.2%", "scene": "board", "board": 1, "active": [0, 1]},
+    {"text": "跌的是淡水鱼，草鱼和鲫鱼都降了。", "caption": "草鱼 −0.9%｜鲫鱼 −1.0%", "scene": "board", "board": 1, "active": [2, 3]},
+    {"text": "开海后最便宜，春节最贵。现在正是好时候。", "caption": "开海后最低，春节最高", "scene": "hook",
+     "icon": "🐚", "big": ["开海后最便宜", "春节最贵"], "colors": ["#2b211b", "#cf3b31"],
+     "note": "想吃就趁现在"},
+    {"text": "对了，这周油价也降了，九二号便宜五毛一。", "caption": "92号汽油 −0.51 元/升", "scene": "hook",
+     "icon": "⛽", "big": ["油价也降了", "92号 −0.51元"], "colors": ["#2b211b", "#138b4a"],
+     "note": "加满一箱省约26元"},
+    {"text": "关注我，每周日更新。", "caption": "什么该买，什么该等", "scene": "end"}
+  ]
+}
